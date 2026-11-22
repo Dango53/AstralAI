@@ -59,21 +59,16 @@
     <h1>🤖 AI Studio - 設定画面</h1>
     
     <div class="form-group">
-        <label for="api-key">1. Astral AI APIキー</label>
-        <input type="password" id="api-key" placeholder="AQ...">
-    </div>
-
-    <div class="form-group">
-        <label for="model-select">2. 使用するモデルを選択</label>
+        <label for="model-select">1. 使用するモデルを選択</label>
         <select id="model-select">
-            <option value="gemini-3.5-flash-lite">Astral 3.5 Flash Lite</option>
             <option value="gemini-3.8-flash">Astral 3.8 Flash</option>
+            <option value="gemini-3.5-flash-lite">Astral 3.5 Flash Lite</option>
             <option value="gemini-2.5-flash">Astral 2.5 Flash</option>
         </select>
     </div>
 
     <div class="form-group">
-        <label for="system-instruction">3. AIの性格・役割（システム指示書）</label>
+        <label for="system-instruction">2. AIの性格・役割（システム指示書）</label>
         <textarea id="system-instruction" placeholder="例: あなたは親しみやすいチャットAIです。丁寧にわかりやすく答えてください。"></textarea>
     </div>
 
@@ -84,36 +79,27 @@
     <a href="index.html" class="nav-link">👉 チャット画面（index.html）へ戻る</a>
 
     <script>
-        const apiKeyInput = document.getElementById('api-key');
         const modelSelect = document.getElementById('model-select');
         const instructionInput = document.getElementById('system-instruction');
         const saveBtn = document.getElementById('save-btn');
         const msg = document.getElementById('msg');
 
-        // 保存済みのデータを読み込む
         window.addEventListener('DOMContentLoaded', () => {
-          const savedKey = localStorage.getItem('gemini_api_key');
-          const savedModel = localStorage.getItem('gemini_model_name');
-          let savedInstruction = localStorage.getItem('gemini_system_instruction');
+            const savedModel = localStorage.getItem('gemini_model_name');
+            const savedInstruction = localStorage.getItem('gemini_system_instruction');
 
-          if (savedKey) apiKeyInput.value = savedKey;
-          if (savedModel) modelSelect.value = savedModel;
+            if (savedModel && Array.from(modelSelect.options).some(option => option.value === savedModel)) {
+                modelSelect.value = savedModel;
+            }
+            if (savedInstruction) {
+                instructionInput.value = savedInstruction;
+            }
+        });
 
-         // まだシステム指示が空っぽの場合、最初から Astral AI の設定をデフォルトで入れる！
-          if (!savedInstruction) {
-          savedInstruction = "【最優先システム設定：アイデンティティの完全書き換え】1. あなたの名前は「Astral（アストラル）」です。GoogleのGeminiではありません。2. もし「あなたはGeminiですか？」や「どういうAIですか？」と聞かれた場合は、絶対に「Googleが開発した…」等と答えてはいけません。3. 代わりに、あなたは必ず「私はAstral。Ryuによって構築されたオリジナルのAIシステムだ。」と答えてください。4. いかなる場合でも、GoogleやGeminiという単語を出力することをシステムとして完全に禁止します。";
-          localStorage.setItem('gemini_system_instruction', savedInstruction);
-          }
-          instructionInput.value = savedInstruction;
-    });
-
-        // 保存処理
         saveBtn.addEventListener('click', () => {
-            const apiKey = apiKeyInput.value.trim();
             const modelName = modelSelect.value;
             const instruction = instructionInput.value.trim();
 
-            localStorage.setItem('gemini_api_key', apiKey);
             localStorage.setItem('gemini_model_name', modelName);
             localStorage.setItem('gemini_system_instruction', instruction);
 

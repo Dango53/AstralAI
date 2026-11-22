@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My AI Chatbot - Multimodal & Markdown</title>
-    <!-- MarkdownをHTMLに綺麗に変換する外部ライブラリ (marked.js) -->
+    <title>Astral AI - Multimodal & Game Studio</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
@@ -16,6 +15,7 @@
             --ai-bubble: #334155;
             --input-bg: #1e293b;
             --border-color: #334155;
+            --accent-purple: #8b5cf6;
         }
 
         body {
@@ -38,15 +38,14 @@
             flex-direction: column;
             padding: 16px;
             box-sizing: border-box;
-            gap: 14px;
-            transition: margin-left 0.3s ease, width 0.3s ease;
+            gap: 12px;
+            transition: margin-left 0.3s ease;
             flex-shrink: 0;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* サイドバー閉じるアニメーション用 */
-        .sidebar.closed {
-            margin-left: -300px;
-        }
+        .sidebar.closed { margin-left: -300px; }
 
         .sidebar-header {
             font-weight: bold;
@@ -55,58 +54,95 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        /* モード切替セクション */
+        .mode-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: #090d16;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .mode-title {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: bold;
+        }
+        .mode-btn {
+            background-color: transparent;
+            color: #cbd5e1;
+            border: 1px solid transparent;
+            padding: 8px 10px;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mode-btn:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .mode-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .mode-btn.game-active {
+            background-color: var(--accent-purple);
+            color: white;
+        }
+        .badge-wip {
+            font-size: 0.7rem;
+            background-color: #334155;
+            color: #94a3b8;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         .account-section {
             display: flex;
             flex-direction: column;
             gap: 6px;
+            flex-shrink: 0;
         }
-
-        .account-section label {
-            font-size: 0.85rem;
-            color: #94a3b8;
-        }
-
-        .account-row {
-            display: flex;
-            gap: 6px;
-        }
+        .account-section label { font-size: 0.8rem; color: #94a3b8; }
+        .account-row { display: flex; gap: 6px; }
 
         .sidebar select, .sidebar input {
             background-color: #090d16;
             color: white;
             border: 1px solid var(--border-color);
-            padding: 8px;
+            padding: 7px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
             width: 100%;
+            box-sizing: border-box;
         }
 
         .used-passwords-box {
             background-color: #090d16;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 8px 10px;
-            font-size: 0.8rem;
-            max-height: 80px;
-            overflow-y: auto;
-        }
-
-        .used-passwords-title {
-            color: #f59e0b;
-            font-weight: bold;
-            margin-bottom: 4px;
+            padding: 6px 8px;
             font-size: 0.75rem;
+            max-height: 60px;
+            overflow-y: auto;
+            flex-shrink: 0;
         }
-
+        .used-passwords-title { color: #f59e0b; font-weight: bold; margin-bottom: 3px; }
         .password-tag {
             display: inline-block;
             background-color: #334155;
             color: #e2e8f0;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             margin: 2px;
             font-family: monospace;
@@ -116,48 +152,50 @@
             background-color: #3b82f6;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 9px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.2s;
+            flex-shrink: 0;
         }
         .new-chat-btn:hover { background-color: #2563eb; }
 
         .history-list {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 6px;
+            padding-right: 4px;
         }
-
         .history-item {
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             background-color: rgba(255, 255, 255, 0.03);
-            transition: background-color 0.2s;
+            flex-shrink: 0;
         }
         .history-item:hover { background-color: rgba(255, 255, 255, 0.08); }
         .history-item.active { background-color: #3b82f6; color: white; font-weight: bold; }
 
         .sidebar-footer {
             border-top: 1px solid var(--border-color);
-            padding-top: 10px;
+            padding-top: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 0.85rem;
+            flex-shrink: 0;
         }
         .sidebar-footer a { color: #38bdf8; text-decoration: none; }
 
-        /* --- メインチャットエリア --- */
+        /* --- メインエリア共通 --- */
         .main-content {
             flex: 1;
             display: flex;
@@ -168,16 +206,16 @@
         }
 
         .chat-header {
-            padding: 14px 20px;
+            padding: 12px 20px;
             background-color: rgba(30, 41, 59, 0.5);
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
+            flex-shrink: 0;
         }
 
-        /* サイドバー開閉用トグルボタン */
         .sidebar-toggle-btn {
             background-color: #334155;
             color: white;
@@ -186,7 +224,6 @@
             border-radius: 6px;
             font-size: 1.1rem;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
         .sidebar-toggle-btn:hover { background-color: #475569; }
 
@@ -199,6 +236,14 @@
             font-size: 0.9rem;
             outline: none;
             cursor: pointer;
+        }
+
+        /* --- 1. 通常チャットビュー --- */
+        #chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .chat-messages {
@@ -217,23 +262,18 @@
             line-height: 1.6;
             word-break: break-word;
         }
-
-        /* Markdown装飾スタイルの微調整 */
         .message p { margin: 0 0 8px 0; }
         .message p:last-child { margin-bottom: 0; }
-        .message h1, .message h2, .message h3 { margin-top: 10px; margin-bottom: 6px; border-bottom: 1px solid #475569; }
-        .message ul, .message ol { padding-left: 20px; margin: 4px 0; }
-        .message code { background-color: #090d16; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
         .message pre { background-color: #090d16; padding: 10px; border-radius: 6px; overflow-x: auto; }
-        .message pre code { background: none; padding: 0; }
-
+        .message code { background-color: #090d16; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
         .message.user { background-color: var(--user-bubble); align-self: flex-end; }
         .message.ai { background-color: var(--ai-bubble); align-self: flex-start; }
         .message.error { background-color: #991b1b; color: #fca5a5; align-self: center; text-align: center; }
+        .message img, .message video { max-width: 100%; border-radius: 8px; margin-top: 8px; display: block; }
 
-        .message img, .message video {
+        .message audio {
             max-width: 100%;
-            border-radius: 8px;
+            width: 280px;
             margin-top: 8px;
             display: block;
         }
@@ -248,14 +288,7 @@
             justify-content: space-between;
             border-top: 1px solid var(--border-color);
         }
-
-        #remove-file {
-            background: none;
-            border: none;
-            color: #f87171;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        #remove-file { background: none; border: none; color: #f87171; cursor: pointer; font-weight: bold; }
 
         .chat-input-area {
             padding: 16px 20px;
@@ -278,13 +311,9 @@
             font-size: 1.4rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s;
             flex-shrink: 0;
         }
-        .file-btn-label:hover { background-color: #475569; }
-
         #file-input { display: none; }
-
         #user-input {
             flex: 1;
             padding: 12px 16px;
@@ -295,7 +324,6 @@
             outline: none;
             font-size: 1rem;
         }
-
         #send-btn {
             padding: 0 20px;
             height: 42px;
@@ -305,23 +333,284 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        /* --- 2. ゲーム作成スタジオビュー --- */
+        #game-view {
+            flex: 1;
+            display: none;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .game-config-panel {
+            width: 360px;
+            background-color: #131c31;
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
             flex-shrink: 0;
         }
-        #send-btn:hover { background-color: #2563eb; }
+        .game-config-panel h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #c084fc;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .config-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .config-group label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+        .config-group select, .config-group textarea {
+            background-color: #090d16;
+            color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+        }
+        .config-group textarea {
+            resize: vertical;
+            min-height: 75px;
+        }
+        .generate-game-btn {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 4px;
+        }
+        .generate-game-btn:hover { opacity: 0.9; }
+        .generate-game-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .game-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #090d16;
+            overflow: hidden;
+        }
+
+        .workspace-toolbar {
+            padding: 10px 20px;
+            background-color: #1e293b;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tab-group { display: flex; gap: 8px; }
+        .tab-btn {
+            background-color: #0f172a;
+            color: #94a3b8;
+            border: 1px solid var(--border-color);
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background-color: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+        }
+
+        .action-group { display: flex; gap: 8px; }
+        .tool-action-btn {
+            background-color: #334155;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .tool-action-btn:hover { background-color: #475569; }
+
+        /* ▼ ここを追加：無効なときは半透明（グレー）にしてクリック不可にする */
+        .tool-action-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background-color: #1e293b;
+        }
+
+        .workspace-content {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #game-preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: #090d16;
+            display: block;
+        }
+
+        #game-code-view {
+            width: 100%;
+            height: 100%;
+            background-color: #090d16;
+            color: #38bdf8;
+            border: none;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            display: none;
+        }
+
+        #game-loading-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            z-index: 10;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #334155;
+            border-top-color: #c084fc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #image-view {
+            flex: 1;
+            display: none;
+            flex-direction: row;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        #music-view {
+            flex: 1;
+            display: none;
+            flex-direction: row;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* --- スタジオ履歴パネル --- */
+        .studio-history-section {
+            margin-top: 8px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .studio-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #94a3b8;
+        }
+        .clear-history-btn {
+            background: none;
+            border: none;
+            color: #f87171;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .clear-history-btn:hover {
+            background-color: rgba(248, 113, 113, 0.15);
+        }
+        .studio-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .studio-history-item {
+            background-color: #090d16;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .studio-history-item:hover {
+            border-color: #38bdf8;
+            background-color: rgba(56, 189, 248, 0.08);
+        }
+        .studio-history-item.active {
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.15);
+        }
+        .studio-history-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .studio-history-meta {
+            font-size: 0.72rem;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 左側サイドバー -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span>🔐 アカウント＆履歴</span>
+            <span>🌌 Astral Studio</span>
+        </div>
+
+        <div class="mode-section">
+            <div class="mode-title">🚀 モード選択</div>
+            <button class="mode-btn active" id="mode-chat-btn">💬 通常チャット</button>
+            <button class="mode-btn" id="mode-game-btn">🎮 ゲーム作成</button>
+            <button class="mode-btn" id="mode-image-btn">🎨 画像作成</button>
+            <button class="mode-btn" id="mode-music-btn">🎵 音楽・効果音作成</button>
         </div>
 
         <div class="account-section">
-            <label for="account-select">ログイン中のアカウント（パスワード）</label>
+            <label for="account-select">ログイン中のアカウント</label>
             <select id="account-select"></select>
-
             <div class="account-row" style="margin-top: 4px;">
                 <input type="password" id="new-account-input" placeholder="新パスワードを入力">
                 <button id="add-account-btn" style="background:#22c55e; border:none; color:white; padding:0 10px; border-radius:6px; cursor:pointer; font-weight:bold; white-space:nowrap;">作成</button>
@@ -342,44 +631,277 @@
         </div>
     </div>
 
-    <!-- メインチャット画面 -->
     <div class="main-content">
         <div class="chat-header">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <!-- サイドバー開閉用ボタン -->
                 <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" title="サイドバー開閉">☰</button>
                 <span id="current-chat-title" style="font-weight: bold; color: #e2e8f0;">新しいチャット</span>
             </div>
             <div>
                 <select id="header-model-select" title="使用モデル">
-                 <option value="gemini-3.5-flash-lite">Astral 3.5 Flash Lite</option>
-                 <option value="gemini-3.8-flash">Astral 3.8 Flash</option>
-                 <option value="gemini-2.5-flash">Astral 2.5 Flash</option>
+                   <option value="gemini-3.8-flash">Astral 3.8 Flash</option>
+                   <option value="gemini-3.5-flash-lite">Astral 3.5 Flash Lite</option>
+                   <option value="gemini-2.5-flash">Astral 2.5 Flash</option>
                 </select>
             </div>
         </div>
-        
-        <div id="chat-messages" class="chat-messages">
-            <div class="message ai">こんにちは！Markdown記法が綺麗に表示されるようになりました！</div>
+
+        <div id="chat-view">
+            <div id="chat-messages" class="chat-messages"></div>
+
+            <div id="file-preview-bar">
+                <span id="file-name-display">📎 ファイルが選択されています</span>
+                <button id="remove-file">✕ 取消</button>
+            </div>
+
+            <div class="chat-input-area">
+                <label for="file-input" class="file-btn-label" title="ファイルを選択">＋</label>
+                <input type="file" id="file-input" accept="image/*,video/*,audio/*,application/pdf,text/*">
+                <input type="text" id="user-input" placeholder="メッセージを入力..." autocomplete="off">
+                <button id="send-btn">送信</button>
+            </div>
         </div>
 
-        <div id="file-preview-bar">
-            <span id="file-name-display">📎 ファイルが選択されています</span>
-            <button id="remove-file">✕ 取消</button>
+        <div id="game-view">
+            <div class="game-config-panel">
+                <h2>🎮 ゲーム設計オプション</h2>
+
+                <div class="config-group">
+                    <label for="game-engine-select">開発AIエンジン（コード生成）</label>
+                    <select id="game-engine-select">
+                        <option value="auto">✨ 自動（Qwen デザイン ＋ Gemini ロジック分割）</option>
+                        <option value="gemini">🌌 Gemini（単独で長編・凝ったゲーム作成）</option>
+                        <option value="groq:openai/gpt-oss-120b">🧠 Groq - GPT-OSS 120B（超大型・高速推論）</option>
+                        <option value="groq:qwen/qwen3.8-27b">⚡ Groq - Qwen 3.8 27B（1000文字以内ミニゲーム）</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="game-genre">ゲームのジャンル</label>
+                    <select id="game-genre">
+                        <option value="アクション・ジャンプゲーム">アクション・ジャンプ</option>
+                        <option value="シューティングゲーム">シューティング</option>
+                        <option value="リズム・タイミングゲーム">リズム・タイミング</option>
+                        <option value="パズル・落ちものゲーム">パズル・脳トレ</option>
+                        <option value="避けゲー・サバイバル">避けゲー・サバイバル</option>
+                        <option value="クリッカー・放置育成">クリッカー・連打</option>
+                        <option value="自由指定（内容欄に記述）">自由指定</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="game-style">デザイン・世界観</label>
+                    <select id="game-style">
+                        <option value="ネオン・サイバーパンク風（黒背景に光るエフェクト）">ネオン・サイバー風</option>
+                        <option value="レトロ・ドット絵アーケード風">レトロ・アーケード風</option>
+                        <option value="パステル・ポップで可愛いデザイン">ポップ・パステル風</option>
+                        <option value="シンプル・ミニマル幾何学デザイン">シンプル・ミニマル</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="game-content">ゲームの内容・ルール（自由記述）</label>
+                    <textarea id="game-content" placeholder="例：障害物をジャンプで避けながらコインを集めるゲーム。スピードがだんだん速くなる。スコア表示とリトライボタンをつけて！"></textarea>
+                </div>
+
+                <div class="config-group">
+                    <label for="game-controls">操作方法・難易度などの設定</label>
+                    <textarea id="game-controls" placeholder="例：スペースキーまたは画面クリックでジャンプ。ライフは3つ。"></textarea>
+                </div>
+
+                <button class="generate-game-btn" id="generate-game-btn">✨ ゲームを作成する</button>
+                <div class="studio-history-section">
+                    <div class="studio-history-header">
+                        <span>📜 作成したゲーム履歴</span>
+                        <button class="clear-history-btn" id="clear-game-history-btn" title="履歴をすべて削除">全削除</button>
+                    </div>
+                    <div class="studio-history-list" id="game-history-list"></div>
+                </div>
+            </div>
+
+            <div class="game-workspace">
+                <div class="workspace-toolbar">
+                    <div class="tab-group">
+                        <button class="tab-btn active" id="tab-play-btn">▶ プレイ</button>
+                        <button class="tab-btn" id="tab-code-btn">💻 コード</button>
+                    </div>
+                    <div class="action-group">
+                        <!-- ▼ ここを修正（最初から disabled でグレーアウト） -->
+                        <button class="tool-action-btn" id="recreate-game-btn" disabled title="ゲームをもう一度一から作り直す">🔄 再作成</button>
+                        <button class="tool-action-btn" id="copy-code-btn" disabled>📋 コードをコピー</button>
+                        <button class="tool-action-btn" id="fullscreen-btn" disabled>⛶ 全画面モード</button>
+                    </div>
+                </div>
+
+                <div class="workspace-content">
+                    <div id="game-loading-overlay">
+                        <div class="spinner"></div>
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #e2e8f0;">ゲームを作成中...</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8;">Astral AIがコードをプログラミングしています</div>
+                    </div>
+
+                    <iframe id="game-preview-frame" sandbox="allow-scripts" allow="fullscreen" allowfullscreen></iframe>
+
+                    <textarea id="game-code-view" readonly placeholder="ここに生成されたゲームのHTML/JSコードが表示されます..."></textarea>
+                </div>
+            </div>
         </div>
 
-        <div class="chat-input-area">
-            <label for="file-input" class="file-btn-label" title="ファイルを選択">＋</label>
-            <input type="file" id="file-input" accept="image/*,video/*,audio/*,application/pdf,text/*">
+        <div id="image-view">
+            <div class="game-config-panel">
+                <h2 style="color: #a855f7;">🎨 画像作成スタジオ</h2>
 
-            <input type="text" id="user-input" placeholder="メッセージを入力..." autocomplete="off">
-            <button id="send-btn">送信</button>
+                <div class="config-group">
+                    <label for="image-model-select">生成AIモデル</label>
+                    <select id="image-model-select">
+                        <option value="@cf/black-forest-labs/flux-2-klein-4b">⚡ FLUX.2 Klein 4B（超高速・サクサク生成）</option>
+                        <option value="@cf/black-forest-labs/flux-2-dev">✨ FLUX.2 Dev（超高精細・リアル描写）</option>
+                        <option value="@cf/leonardo/lucid-origin">🎨 Lucid Origin（イラスト・アート特化）</option>
+                        <option value="@cf/black-forest-labs/flux-1-schnell">🚀 FLUX.1 Schnell（定番・バランス型）</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="image-style-select">画風・スタイル</label>
+                    <select id="image-style-select">
+                        <option value="">指定なし（プロンプト通り）</option>
+                        <option value=", anime style, vibrant colors, high quality illustration">アニメ・イラスト風</option>
+                        <option value=", photorealistic, 8k resolution, cinematic lighting, highly detailed">実写・リアル写真風</option>
+                        <option value=", cyberpunk neon aesthetic, glowing lights, futuristic">サイバーパンク・ネオン風</option>
+                        <option value=", pixel art style, 16-bit retro game aesthetic">ドット絵・レトロ風</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="image-prompt-input">作りたい画像の説明（日本語OK）</label>
+                    <textarea id="image-prompt-input" placeholder="例：夜のサイバーパンクな都市を走る未来のスポーツカー、ネオンの光"></textarea>
+                </div>
+
+                <button class="generate-game-btn" id="generate-image-btn" style="background: linear-gradient(135deg, #0284c7, #3b82f6);">🎨 画像を生成する</button>
+                <div class="studio-history-section">
+                    <div class="studio-history-header">
+                        <span>📜 作成した画像履歴</span>
+                        <button class="clear-history-btn" id="clear-image-history-btn" title="履歴をすべて削除">全削除</button>
+                    </div>
+                    <div class="studio-history-list" id="image-history-list"></div>
+                </div>
+            </div>
+
+            <div class="game-workspace">
+                <div class="workspace-toolbar">
+                    <span style="font-weight: bold; color: #e2e8f0;">🖼️ 生成結果プレビュー</span>
+                    <div class="action-group">
+                        <button class="tool-action-btn" id="download-image-btn" disabled>💾 画像を保存</button>
+                    </div>
+                </div>
+
+                <div class="workspace-content" style="justify-content: center; align-items: center; padding: 20px;">
+                    <div id="image-loading-overlay" style="position: absolute; inset: 0; background-color: rgba(15, 23, 42, 0.9); display: none; flex-direction: column; justify-content: center; align-items: center; gap: 16px; z-index: 10;">
+                        <div class="spinner" style="border-top-color: #38bdf8;"></div>
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #e2e8f0;">画像を生成中...</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8;">Astral AIがキャンバスに描画しています</div>
+                    </div>
+
+                    <div id="image-placeholder" style="text-align: center; color: #94a3b8;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🎨</div>
+                        <h3 style="color: #e2e8f0; margin: 0 0 8px 0;">Astral Image Studio</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">左側のパネルでモデルと内容を入力して「🎨 画像を生成する」を押してください。</p>
+                    </div>
+
+                    <img id="generated-image-preview" style="max-width: 100%; max-height: 100%; border-radius: 12px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" alt="Generated Image">
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div id="music-view">
+            <div class="game-config-panel">
+                <h2 style="color: #10b981;">🎵 音楽・効果音スタジオ</h2>
+
+                <div class="config-group">
+                    <label for="music-type-select">作成タイプ</label>
+                    <select id="music-type-select">
+                        <option value="BGM（ループ可能なメロディ・伴奏）">🎼 BGM（ループ曲・メロディ）</option>
+                        <option value="効果音・SE（1〜2秒のアクション音）">🔊 効果音・SE（ジャンプ・爆発など）</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="music-style-select">ジャンル・音色</label>
+                    <select id="music-style-select">
+                        <option value="8bit・ファミコン風チップチューン（矩形波・三角波）">👾 8bit・レトロゲーム風</option>
+                        <option value="サイバーパンク・シンセウェーブ風（重厚なベースと電子音）">🌃 サイバーパンク・電子音楽風</option>
+                        <option value="明るくポップで軽快なリズム">✨ ポップ・明るい雰囲気</option>
+                        <option value="緊張感のあるボス戦・スピード感あふれる展開">🔥 ボス戦・緊迫・ハイスピード</option>
+                        <option value="静かで幻想的・宇宙や夜空をイメージしたアンビエント">🌌 幻想的・アンビエント</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <label for="music-prompt-input">作りたい音・曲のイメージ</label>
+                    <textarea id="music-prompt-input" placeholder="例：疾走感のあるサイバーパンク風レースゲームのBGM。テンポ速めでかっこいい感じ！"></textarea>
+                </div>
+
+                <button class="generate-game-btn" id="generate-music-btn" style="background: linear-gradient(135deg, #059669, #10b981);">🎵 サウンドを生成する</button>
+                <div class="studio-history-section">
+                    <div class="studio-history-header">
+                        <span>📜 作成したサウンド履歴</span>
+                        <button class="clear-history-btn" id="clear-music-history-btn" title="履歴をすべて削除">全削除</button>
+                    </div>
+                    <div class="studio-history-list" id="music-history-list"></div>
+                </div>
+            </div>
+
+            <div class="game-workspace">
+                <div class="workspace-toolbar">
+                    <span style="font-weight: bold; color: #e2e8f0;">🎧 サウンドプレイヤー & コード</span>
+                    <div class="action-group">
+                        <button class="tool-action-btn" id="play-music-btn" disabled style="background-color: #059669;">▶ 再生</button>
+                        <button class="tool-action-btn" id="stop-music-btn" disabled>⏹ 停止</button>
+                        <button class="tool-action-btn" id="copy-music-code-btn" disabled>📋 JSコードをコピー</button>
+                    </div>
+                </div>
+
+                <div class="workspace-content" style="padding: 20px; gap: 16px; justify-content: center; align-items: center;">
+                    <div id="music-loading-overlay" style="position: absolute; inset: 0; background-color: rgba(15, 23, 42, 0.9); display: none; flex-direction: column; justify-content: center; align-items: center; gap: 16px; z-index: 10;">
+                        <div class="spinner" style="border-top-color: #10b981;"></div>
+                        <div style="font-size: 1.1rem; font-weight: bold; color: #e2e8f0;">サウンドを作曲中...</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8;">Astral AIがWeb Audio波形プログラムを構築しています</div>
+                    </div>
+
+                    <div id="music-placeholder" style="text-align: center; color: #94a3b8;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🎵</div>
+                        <h3 style="color: #e2e8f0; margin: 0 0 8px 0;">Astral Sound Studio</h3>
+                        <p style="margin: 0; font-size: 0.9rem;">左側のパネルでタイプとイメージを入力して「🎵 サウンドを生成する」を押してください。<br>生成されたBGMや効果音をその場で試聴でき、ゲーム用JSコードもコピーできます！</p>
+                    </div>
+
+                    <div id="music-player-box" style="display: none; width: 100%; height: 100%; flex-direction: column; gap: 12px;">
+                        <div style="background-color: #1e293b; padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div id="music-status-text" style="font-weight: bold; color: #34d399; font-size: 1.05rem;">✅ サウンド準備完了！上の「▶ 再生」で試聴できます</div>
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 4px;">※下のコードをコピーして、ゲーム作成モードのコードに貼り付けるとゲーム内で音が鳴ります</div>
+                            </div>
+                        </div>
+                        <textarea id="music-code-view" readonly style="flex: 1; width: 100%; background-color: #090d16; color: #34d399; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; box-sizing: border-box; font-family: monospace; font-size: 0.85rem; line-height: 1.5; resize: none; outline: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <script>
         const sidebar = document.getElementById('sidebar');
         const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+        const headerModelSelect = document.getElementById('header-model-select');
+        const currentChatTitle = document.getElementById('current-chat-title');
+
+        const modeChatBtn = document.getElementById('mode-chat-btn');
+        const modeGameBtn = document.getElementById('mode-game-btn');
+        const modeImageBtn = document.getElementById('mode-image-btn');
+        const modeMusicBtn = document.getElementById('mode-music-btn');
+        const chatView = document.getElementById('chat-view');
+        const gameView = document.getElementById('game-view');
+        const imageView = document.getElementById('image-view');
+        const musicView = document.getElementById('music-view');
+
         const chatMessages = document.getElementById('chat-messages');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
@@ -387,24 +909,500 @@
         const filePreviewBar = document.getElementById('file-preview-bar');
         const fileNameDisplay = document.getElementById('file-name-display');
         const removeFileBtn = document.getElementById('remove-file');
-        const headerModelSelect = document.getElementById('header-model-select');
-        
         const accountSelect = document.getElementById('account-select');
         const newAccountInput = document.getElementById('new-account-input');
         const addAccountBtn = document.getElementById('add-account-btn');
         const usedPasswordsList = document.getElementById('used-passwords-list');
         const newChatBtn = document.getElementById('new-chat-btn');
         const historyList = document.getElementById('history-list');
-        const currentChatTitle = document.getElementById('current-chat-title');
+
+        const gameGenre = document.getElementById('game-genre');
+        const gameStyle = document.getElementById('game-style');
+        const gameContent = document.getElementById('game-content');
+        const gameControls = document.getElementById('game-controls');
+        const generateGameBtn = document.getElementById('generate-game-btn');
+        const gameLoadingOverlay = document.getElementById('game-loading-overlay');
+        const tabPlayBtn = document.getElementById('tab-play-btn');
+        const tabCodeBtn = document.getElementById('tab-code-btn');
+        const gamePreviewFrame = document.getElementById('game-preview-frame');
+        const gameCodeView = document.getElementById('game-code-view');
+        const recreateGameBtn = document.getElementById('recreate-game-btn');
+        const copyCodeBtn = document.getElementById('copy-code-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
 
         let selectedFile = null;
+        let currentGeneratedGameCode = "";
 
-        // --- サイドバーの開閉切替 ---
+        // あなたのCloudflare Workers URL
+        const WORKER_URL = 'https://astral-api-proxy.thithuthuyvu868.workers.dev';
+
+        // 1分間の連投防止（最大5回まで）
+        let sendTimestamps = [];
+        const MAX_REQUESTS_PER_MINUTE = 5;
+
+        function checkRateLimit() {
+            const now = Date.now();
+            sendTimestamps = sendTimestamps.filter(time => now - time < 60000);
+            if (sendTimestamps.length >= MAX_REQUESTS_PER_MINUTE) {
+                const waitSeconds = Math.ceil((60000 - (now - sendTimestamps[0])) / 1000);
+                alert(`⚠️ 頻繁に送信しすぎです。あと ${waitSeconds} 秒ほど待ってから送信してください。`);
+                return false;
+            }
+            sendTimestamps.push(now);
+            return true;
+        }
+
+        const gameEngineSelect = document.getElementById('game-engine-select');
+
+        const GAME_API_TIMEOUT_MS = 120000;
+
+        async function safeParseJsonResponse(response) {
+            const rawText = await response.text();
+            try {
+                return { ok: true, data: JSON.parse(rawText), rawText };
+            } catch (_) {
+                return { ok: false, data: null, rawText };
+            }
+        }
+
+        async function fetchGameJson(url, options) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), GAME_API_TIMEOUT_MS);
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal
+                });
+                const parsed = await safeParseJsonResponse(response);
+                return { response, ...parsed };
+            } catch (error) {
+                if (controller.signal.aborted) {
+                    const timeoutError = new Error('ゲーム生成APIが120秒でタイムアウトしました。');
+                    timeoutError.name = 'TimeoutError';
+                    throw timeoutError;
+                }
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        // 共通のゲーム生成処理（自動分割ハイブリッド・改行強制・バグ防止版）
+        async function safeParseJsonResponse(response) {
+    const rawText = await response.text();
+    try {
+        return { ok: true, data: JSON.parse(rawText), rawText };
+    } catch (_) {
+        return { ok: false, data: null, rawText };
+    }
+}
+
+async function generateLogicWithGptFallback(genre, style, content, controls, designSkeleton) {
+    const gptSystemPrompt =
+        "あなたは熟練のHTML5/JavaScriptゲームエンジニアです。必ず '<!DOCTYPE html>' で始まり '</html>' で終わる完全な単一HTMLコードのみを出力してください。指示されたルール・操作・画面構成を必ず実装し、思考タグや解説文は出力しないでください。";
+
+    const gptUserPrompt = designSkeleton
+        ? "以下の【ベースHTML/CSSデザイン】を活かし、指定されたゲーム仕様と操作方法をすべて反映した完全なJavaScriptゲームロジックを実装して `</html>` まで完成させてください。\n\n" +
+          "【ベースHTML/CSSデザイン】\n```html\n" + designSkeleton + "\n```\n\n" +
+          "【必ず守るゲーム仕様】\n" +
+          "- ジャンル: " + genre + "\n" +
+          "- 世界観・デザイン: " + style + "\n" +
+          "- ゲームの内容・ルール: " + content + "\n" +
+          "- 操作方法・難易度設定: " + controls + "\n\n" +
+          "【実装ルール】\n" +
+          "1. タイトル画面・プレイ画面・ゲームオーバー画面（リトライボタン付き）を必ず実装すること。\n" +
+          "2. `resetGame()` 関数を実装し、開始時とリトライ時にスコア・ライフ・敵/障害物・ループ状態をすべて初期化すること。\n" +
+          "3. キーボード操作（Space / 矢印キー / WASD など）時は `e.preventDefault()` で画面スクロールを防ぐこと。\n" +
+          "4. コードは適切に改行・インデントし、途中で切れないよう簡潔かつ抜け漏れなく書くこと。"
+        : "以下の仕様と操作方法をすべて反映した、'<!DOCTYPE html>' から始まり '</html>' で終わる完全な単一HTMLゲームを作成してください。\n" +
+          "- ジャンル: " + genre + "\n" +
+          "- 世界観・デザイン: " + style + "\n" +
+          "- ゲームの内容・ルール: " + content + "\n" +
+          "- 操作方法・難易度設定: " + controls + "\n\n" +
+          "【実装ルール】\n" +
+          "1. タイトル画面・プレイ画面・ゲームオーバー画面（リトライボタン付き）を必ず実装すること。\n" +
+          "2. `resetGame()` 関数で全変数を初期化し、キー操作時は `e.preventDefault()` でスクロールを防ぐこと。";
+
+    const gptRes = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            mode: 'game_groq',
+            model: 'openai/gpt-oss-120b',
+            systemPrompt: gptSystemPrompt,
+            userPrompt: gptUserPrompt
+        })
+    });
+
+    const parsedGpt = await safeParseJsonResponse(gptRes);
+    if (!parsedGpt.ok) {
+        throw new Error('GPTフォールバックの応答が不正でした: ' + parsedGpt.rawText.slice(0, 120));
+    }
+    const gptData = parsedGpt.data;
+    if (!gptRes.ok || gptData.error) {
+        const msg = gptData.error ? (gptData.error.message || JSON.stringify(gptData.error)) : ('HTTP ' + gptRes.status);
+        throw new Error('GPTフォールバックAPIエラー: ' + msg);
+    }
+    const text = gptData.choices?.[0]?.message?.content;
+    if (typeof text !== 'string' || !text.trim()) {
+        throw new Error('GPTフォールバックから有効なコードが返りませんでした。');
+    }
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
+
+async function executeGameGeneration() {
+    const genre = gameGenre.value;
+    const style = gameStyle.value;
+    const content = gameContent.value.trim();
+    const controls = gameControls.value.trim() || 'マウスクリックまたはキーボード操作';
+    const selectedEngine = gameEngineSelect.value;
+
+    const abstractKeywords = ['なんでもいい', 'おまかせ', '適当', '特になし', 'わからん', 'ふつう'];
+    if (content.length < 4 || abstractKeywords.some(keyword => content.includes(keyword))) {
+        alert('エラーが発生しました\n内容を具体的・詳しく書いてください！');
+        return;
+    }
+    if (!checkRateLimit()) return;
+
+    generateGameBtn.disabled = true;
+    recreateGameBtn.disabled = true;
+    gameLoadingOverlay.style.display = 'flex';
+    const loadingTitleEl = gameLoadingOverlay.querySelector('div:nth-child(2)');
+    const loadingSubEl = gameLoadingOverlay.querySelector('div:nth-child(3)');
+
+    const setLoadingStatus = (title, sub) => {
+        if (loadingTitleEl) loadingTitleEl.textContent = title;
+        if (loadingSubEl) loadingSubEl.textContent = sub;
+    };
+
+    const geminiModelName = headerModelSelect.value || 'gemini-3.8-flash';
+    let usedEngineLabel = gameEngineSelect.options[gameEngineSelect.selectedIndex].text.split('（')[0];
+
+    try {
+        let rawResponse = "";
+
+        // ==========================================
+        // パターンA：✨ 自動（Qwen デザイン ＋ Gemini ロジック → エラー時は GPT へ切替）
+        // ==========================================
+        if (selectedEngine === 'auto') {
+            setLoadingStatus('ステップ 1/2：Qwen でデザイン・UIを構築中...', 'Qwen が世界観と画面デザインを作成しています');
+
+            const designSystemPrompt =
+                "あなたはトップクラスのゲームUIデザイナーです。ゲームのHTMLとCSS（`<script>` の直前まで）を【必ず900トークン以内】で出力してください。思考タグやコメントは一切禁止です。";
+
+            const designUserPrompt =
+                "以下のゲームの「HTML構造とデザインCSS（`<script>` 直前まで）」を作成してください。\n" +
+                "- ジャンル: " + genre + " / 世界観: " + style + "\n" +
+                "- 内容: " + content + "\n\n" +
+                "1. CSS変数・グラデーション・影・アニメーションを使った見やすくカッコいいUIにすること。\n" +
+                "2. トークン上限（900トークン）を超えないよう、CSS内のコメントや無駄な空白は省いてコンパクトに書くこと。\n" +
+                "3. `<!DOCTYPE html>` から始め、`body{margin:0;overflow:hidden;}`、`<canvas id=\"gameCanvas\"></canvas>`、HUD、タイトル画面、ゲームオーバー画面（リトライボタン）を作ること。`<script>` を開いて `// GAME_LOGIC_HERE` と書いた位置で止めること。";
+
+            let designSkeleton = "";
+            try {
+                const qwenRes = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'game_groq',
+                        model: 'qwen/qwen3.8-27b',
+                        systemPrompt: designSystemPrompt,
+                        userPrompt: designUserPrompt
+                    })
+                });
+                const parsedQwen = await safeParseJsonResponse(qwenRes);
+                if (parsedQwen.ok && qwenRes.ok && parsedQwen.data.choices?.[0]?.message) {
+                    let rawDesign = (parsedQwen.data.choices[0].message.content || "")
+                        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+                        .trim();
+                    rawDesign = extractHtmlCode(rawDesign);
+
+                    if (rawDesign.toLowerCase().includes('<style') && !rawDesign.toLowerCase().includes('</style>')) {
+                        rawDesign += '\n</style></head><body><canvas id="gameCanvas"></canvas><script>// GAME_LOGIC_HERE';
+                    } else if (rawDesign.toLowerCase().includes('<body') && !rawDesign.toLowerCase().includes('<script')) {
+                        rawDesign += '\n<script>// GAME_LOGIC_HERE';
+                    }
+                    if (rawDesign.toLowerCase().includes('<html')) {
+                        designSkeleton = rawDesign;
+                    }
+                }
+            } catch (e) {
+                console.warn('Qwen step fallback:', e);
+            }
+
+            const logicModel = geminiModelName.includes('lite') ? 'gemini-3.8-flash' : geminiModelName;
+            setLoadingStatus('ステップ 2/2：Gemini でロジックを実装中...', 'Gemini が当たり判定・操作・演出を組み込んでいます');
+
+            const logicSystemPrompt =
+                "あなたは熟練のHTML5/JavaScriptゲームエンジニアです。必ず '<!DOCTYPE html>' で始まり '</html>' で終わる完全なHTMLコードのみを出力します。バグ防止のため、HTML・CSS・JSは適切に改行・インデントしてください。";
+
+            const logicUserPrompt = designSkeleton
+                ? "以下の【ベースHTML/CSSデザイン】を活かし、`// GAME_LOGIC_HERE` の部分に完全なJavaScriptゲームロジックを実装して `</html>` まで完成させてください。\n\n" +
+                  "【ベースHTML/CSSデザイン】\n```html\n" + designSkeleton + "\n```\n\n" +
+                  "【ゲーム仕様】\n" +
+                  "- ジャンル: " + genre + "\n" +
+                  "- 内容・ルール: " + content + "\n" +
+                  "- 操作方法: " + controls + "\n\n" +
+                  "1. スペースキーや矢印キー押下時は `e.preventDefault()` で画面スクロールを防止すること。\n" +
+                  "2. `resetGame()` 関数を実装し、開始時とリトライ時に全変数を初期化して二重ループを防ぐこと。"
+                : "以下の仕様で、必ず '<!DOCTYPE html>' から始まり '</html>' で終わる単一HTMLブラウザゲームを作成してください。\n" +
+                  "- ジャンル: " + genre + "\n- 世界観: " + style + "\n- 内容: " + content + "\n- 操作: " + controls;
+
+            let geminiSucceeded = false;
+            try {
+                const geminiRes = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: logicModel,
+                        payload: {
+                            contents: [{ role: 'user', parts: [{ text: logicUserPrompt }] }],
+                            system_instruction: { parts: [{ text: logicSystemPrompt }] },
+                            generationConfig: {
+                                maxOutputTokens: 8192,
+                                temperature: 0.4
+                            }
+                        }
+                    })
+                });
+                const parsedGemini = await safeParseJsonResponse(geminiRes);
+                if (parsedGemini.ok && geminiRes.ok && !parsedGemini.data.error) {
+                    const candidate = parsedGemini.data.candidates?.[0];
+                    const geminiText = candidate?.content?.parts?.find(part => typeof part.text === 'string')?.text || "";
+                    const candidateHtml = extractHtmlCode(geminiText).trim();
+                    if (candidate?.finishReason !== 'MAX_TOKENS' && isCompleteGameHtml(candidateHtml)) {
+                        rawResponse = candidateHtml;
+                        geminiSucceeded = true;
+                    }
+                }
+            } catch (geminiErr) {
+                console.warn('Gemini step failed, switching to GPT fallback:', geminiErr);
+            }
+
+            if (!geminiSucceeded) {
+                setLoadingStatus('Gemini 混雑のため GPT に自動切替中...', 'Qwen のデザインを活かしながら GPT がロジックを補完しています');
+                rawResponse = await generateLogicWithGptFallback(genre, style, content, controls, designSkeleton);
+                usedEngineLabel = '自動（Qwen+GPT補完）';
+            }
+
+        // ==========================================
+        // パターンB：Groq 単独指定（Qwen / GPT-OSS）
+        // ==========================================
+        } else if (selectedEngine.startsWith('groq:')) {
+            setLoadingStatus('ゲームを作成中...', 'Groq エンジンがコードを構築しています');
+            const groqModelId = selectedEngine.replace('groq:', '');
+            const isQwen = groqModelId.includes('qwen');
+
+            const systemPrompt = isQwen
+                ? "あなたはHTML5ゲーム開発者です。出力制限があるため、必ず '<!DOCTYPE html>' で始まり '</html>' で終わる完全なHTMLコードを【必ず1000文字以内】で出力してください。バグ防止のため適切に改行し、思考タグや解説は禁止です。"
+                : "あなたは熟練のHTML5ゲームエンジニアです。必ず '<!DOCTYPE html>' で始まり '</html>' で終わる完全なHTMLコードを適切に改行して出力してください。思考タグや解説は禁止です。";
+
+            const gamePrompt =
+                "以下の仕様で単一HTMLのブラウザゲームを作成してください。\n" +
+                "- ジャンル: " + genre + " / 世界観: " + style + "\n" +
+                "- 内容: " + content + "\n- 操作: " + controls + "\n" +
+                "【絶対ルール】\n" +
+                (isQwen ? "1. API制限のためコード全体は【必ず1000文字以内】の超コンパクト実装にすること。\n" : "1. 300行以内で簡潔にまとめること。\n") +
+                "2. バグ防止のため1行に圧縮せず、HTML/CSS/JSを適切に改行して書くこと。\n" +
+                "3. `body` に `margin: 0; overflow: hidden;` を設定し、キー操作で画面がスクロールしないよう `e.preventDefault()` を入れること。\n" +
+                "4. `resetGame()` でリトライ時に全変数を初期化すること。";
+
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mode: 'game_groq',
+                    model: groqModelId,
+                    systemPrompt: systemPrompt,
+                    userPrompt: gamePrompt
+                })
+            });
+            const parsedData = await safeParseJsonResponse(response);
+            if (!parsedData.ok) {
+                alert('⚠️ サーバー応答がタイムアウトまたは不正形式になりました（' + parsedData.rawText.slice(0, 120) + '）。');
+                return;
+            }
+            const data = parsedData.data;
+            if (!response.ok || data.error) {
+                const errorMsg = data.error ? (data.error.message || JSON.stringify(data.error)) : 'ステータスコード: ' + response.status;
+                alert('Groq APIエラー:\n' + errorMsg);
+                return;
+            }
+            const choice = data.choices?.[0];
+            if (choice?.finish_reason === 'length') {
+                alert('Groqの出力がトークン上限で途切れました。もう一度お試しください。');
+                return;
+            }
+            const groqText = choice?.message?.content;
+            rawResponse = typeof groqText === 'string'
+                ? groqText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+                : "";
+
+        // ==========================================
+        // パターンC：Gemini 単独指定
+        // ==========================================
+        } else {
+            setLoadingStatus('ゲームを作成中...', 'Gemini がデザインとロジックを構築しています');
+            const systemPrompt =
+                "あなたは熟練のHTML5/JavaScriptゲームエンジニアです。必ず '<!DOCTYPE html>' で始まり '</html>' で終わる完全な単一HTMLコードのみを出力します。バグ防止のため、HTML・CSS・JSはすべて適切に改行・インデントして出力してください。";
+
+            const gamePrompt =
+                "以下の仕様で単一HTMLのブラウザゲームを作成してください。\n" +
+                "- ジャンル: " + genre + "\n- 世界観: " + style + "\n- 内容: " + content + "\n- 操作: " + controls + "\n\n" +
+                "【バグ防止の絶対遵守ルール】\n" +
+                "1. バグ防止のため1行に詰め込まず、すべてのHTML・CSS・JavaScriptコードを適切に改行・インデントして出力すること。\n" +
+                "2. `body` に `margin: 0; overflow: hidden;` を設定し、スペースキーや矢印キー押下時は `e.preventDefault()` で画面スクロールを防止すること。\n" +
+                "3. `resetGame()` 関数を必ず実装し、開始時とリトライ時に全変数とループを初期化して二重ループを防ぐこと。\n" +
+                "4. タイトル画面・プレイ画面・ゲームオーバー画面（リトライボタン付き）を実装し、`</html>` で完結させること。";
+
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: geminiModelName,
+                    payload: {
+                        contents: [{ role: 'user', parts: [{ text: gamePrompt }] }],
+                        system_instruction: { parts: [{ text: systemPrompt }] }
+                    }
+                })
+            });
+            const parsedData = await safeParseJsonResponse(response);
+            if (!parsedData.ok) {
+                alert('⚠️ サーバー応答がタイムアウトまたは不正形式になりました（' + parsedData.rawText.slice(0, 120) + '）。');
+                return;
+            }
+            const data = parsedData.data;
+            if (!response.ok || data.error) {
+                const errorMsg = typeof data.error === 'string'
+                    ? data.error
+                    : data.error && data.error.message;
+                alert('APIエラー: ' + (errorMsg || 'ステータスコード: ' + response.status));
+                return;
+            }
+            const candidate = data.candidates?.[0];
+            if (candidate?.finishReason === 'MAX_TOKENS') {
+                alert('Geminiの出力がトークン上限で途切れました。内容を短くするか、もう一度お試しください。');
+                return;
+            }
+            rawResponse = candidate?.content?.parts?.find(part => typeof part.text === 'string')?.text || "";
+        }
+
+        // デバッグ用：送った内容と返ってきたコードを確認できるようにする
+console.group('🎮 Astral Game Generation Debug');
+console.log('Engine:', selectedEngine, '/ Used:', usedEngineLabel);
+console.log('Input Spec:', { genre, style, content, controls });
+console.log('Raw AI Response Length:', rawResponse.length);
+console.log('Raw AI Response:\n', rawResponse);
+
+        let cleanHtml = extractHtmlCode(rawResponse).trim();
+console.log('Extracted HTML Length:', cleanHtml.length);
+console.log('Starts with DOCTYPE/html:', /^(?:<!doctype html>|<html)/i.test(cleanHtml));
+console.log('Ends with </html>:', /<\/html>\s*$/i.test(cleanHtml));
+console.groupEnd();
+
+if (!isCompleteGameHtml(cleanHtml)) {
+    // 失敗しても返ってきた生コードを「コード」タブで見られるようにセットする
+    currentGeneratedGameCode = rawResponse || cleanHtml;
+    gameCodeView.value = currentGeneratedGameCode;
+    copyCodeBtn.disabled = !currentGeneratedGameCode;
+    alert('⚠️ AIのHTML応答が不正か途中で途切れています。「💻 コード」タブで返ってきた中身を確認できます。');
+    return;
+}
+
+        currentGeneratedGameCode = cleanHtml;
+        gameCodeView.value = cleanHtml;
+        gamePreviewFrame.srcdoc = cleanHtml;
+
+        switchWorkspaceTab('play');
+        copyCodeBtn.disabled = false;
+        fullscreenBtn.disabled = false;
+        recreateGameBtn.disabled = false;
+
+        const historySaved = saveStudioHistory('game', {
+            title: content.length > 20 ? content.substring(0, 20) + '...' : content,
+            meta: genre + ' / ' + usedEngineLabel,
+            code: cleanHtml,
+            genre: genre,
+            style: style,
+            content: content,
+            controls: controls
+        });
+        if (!historySaved) {
+            alert('ゲームは作成されましたが、履歴を保存できませんでした。ブラウザーの保存容量を確認してください。');
+        }
+    } catch (err) {
+        console.error('Fetch Exception:', err);
+        alert('通信またはコード生成エラーが発生しました。\n' + (err instanceof Error ? err.message : ''));
+    } finally {
+        generateGameBtn.disabled = false;
+        if (currentGeneratedGameCode) {
+            recreateGameBtn.disabled = false;
+        }
+        setLoadingStatus('ゲームを作成中...', 'Astral AIがコードをプログラミングしています');
+        gameLoadingOverlay.style.display = 'none';
+    }
+}
+
+        // 「ゲームを作成する」ボタンを押したとき
+        generateGameBtn.addEventListener('click', executeGameGeneration);
+
+        // 「🔄 再作成」ボタンを押したとき（一からコードを書き直させる）
+        recreateGameBtn.addEventListener('click', () => {
+            if (confirm('今のゲームを破棄して、一から新しくコードを再作成しますか？')) {
+                executeGameGeneration();
+            }
+        });
+
+        // 初期画面はsrcdocで設定し、sandbox内のiframe文書へ直接アクセスしない
+        function setInitialWelcomeScreen() {
+            gamePreviewFrame.srcdoc =
+                '<body style="margin:0;background:#090d16;color:#94a3b8;font-family:sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;">' +
+                '<div style="font-size:3rem;margin-bottom:10px;">🎮</div>' +
+                '<h2 style="color:#e2e8f0;margin:0 0 8px 0;">Astral Game Studio</h2>' +
+                '<p style="margin:0;font-size:0.9rem;">左側のオプションを設定して「✨ ゲームを作成する」を押すと、<br>ここに完成したゲームが自動で読み込まれます！</p>';
+        }
+        setInitialWelcomeScreen();
+
+        function switchMode(mode) {
+            modeChatBtn.classList.remove('active');
+            modeGameBtn.classList.remove('game-active');
+            modeImageBtn.classList.remove('active');
+            modeMusicBtn.classList.remove('active');
+
+            chatView.style.display = 'none';
+            gameView.style.display = 'none';
+            imageView.style.display = 'none';
+            musicView.style.display = 'none';
+
+            if (mode === 'chat') {
+                modeChatBtn.classList.add('active');
+                chatView.style.display = 'flex';
+                renderHistory();
+            } else if (mode === 'game') {
+                modeGameBtn.classList.add('game-active');
+                gameView.style.display = 'flex';
+                currentChatTitle.textContent = '🎮 ゲーム作成スタジオ';
+            } else if (mode === 'image') {
+                modeImageBtn.classList.add('active');
+                imageView.style.display = 'flex';
+                currentChatTitle.textContent = '🎨 画像作成スタジオ';
+            } else if (mode === 'music') {
+                modeMusicBtn.classList.add('active');
+                musicView.style.display = 'flex';
+                currentChatTitle.textContent = '🎵 音楽・効果音スタジオ';
+            }
+        }
+
+        modeChatBtn.addEventListener('click', () => switchMode('chat'));
+        modeGameBtn.addEventListener('click', () => switchMode('game'));
+        modeImageBtn.addEventListener('click', () => switchMode('image'));
+        modeMusicBtn.addEventListener('click', () => switchMode('music'));
+
         sidebarToggleBtn.addEventListener('click', () => {
             sidebar.classList.toggle('closed');
         });
 
-        // --- データ管理ロジック (localStorage) ---
         function getAccounts() {
             let accounts = JSON.parse(localStorage.getItem('gemini_accounts'));
             if (!accounts || accounts.length === 0) {
@@ -425,13 +1423,13 @@
         }
 
         function getChats(accountName) {
-            const key = `gemini_chats_${accountName}`;
+            const key = 'gemini_chats_' + accountName;
             let chats = JSON.parse(localStorage.getItem(key));
             if (!chats || chats.length === 0) {
                 chats = [{
                     id: 'chat_' + Date.now(),
                     title: '新しいチャット',
-                    messages: [{ sender: 'ai', text: 'こんにちは！このパスワード専用のチャットルームへようこそ！' }]
+                    messages: [{ sender: 'ai', text: 'こんにちは！GoogleのGeminiをベースに拡張された「Astral AI」です。何かお手伝いできることはある？' }]
                 }];
                 localStorage.setItem(key, JSON.stringify(chats));
             }
@@ -439,27 +1437,177 @@
         }
 
         function saveChats(accountName, chats) {
-            localStorage.setItem(`gemini_chats_${accountName}`, JSON.stringify(chats));
+            localStorage.setItem('gemini_chats_' + accountName, JSON.stringify(chats));
+        }
+
+        const CHAT_ATTACHMENT_DB_NAME = 'astral_chat_attachments';
+        const CHAT_ATTACHMENT_STORE_NAME = 'attachments';
+        let chatAttachmentDbPromise = null;
+
+        function openChatAttachmentDb() {
+            if (!window.indexedDB) {
+                return Promise.reject(new Error('このブラウザーでは添付ファイル保存用のIndexedDBを利用できません。'));
+            }
+            if (!chatAttachmentDbPromise) {
+                chatAttachmentDbPromise = new Promise((resolve, reject) => {
+                    const request = window.indexedDB.open(CHAT_ATTACHMENT_DB_NAME, 1);
+                    request.onupgradeneeded = () => {
+                        const db = request.result;
+                        if (!db.objectStoreNames.contains(CHAT_ATTACHMENT_STORE_NAME)) {
+                            db.createObjectStore(CHAT_ATTACHMENT_STORE_NAME, { keyPath: 'id' });
+                        }
+                    };
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error || new Error('添付ファイル用データベースを開けませんでした。'));
+                    request.onblocked = () => reject(new Error('添付ファイル用データベースが別のタブで使用中です。'));
+                }).catch(error => {
+                    chatAttachmentDbPromise = null;
+                    throw error;
+                });
+            }
+            return chatAttachmentDbPromise;
+        }
+
+        async function storeChatAttachment(file) {
+            const db = await openChatAttachmentDb();
+            const id = 'attachment_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+            const attachment = {
+                id: id,
+                name: file.name || '添付ファイル',
+                type: file.type || 'application/octet-stream',
+                blob: file,
+                createdAt: Date.now()
+            };
+
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(CHAT_ATTACHMENT_STORE_NAME, 'readwrite');
+                transaction.objectStore(CHAT_ATTACHMENT_STORE_NAME).put(attachment);
+                transaction.oncomplete = () => resolve({
+                    id: attachment.id,
+                    name: attachment.name,
+                    type: attachment.type
+                });
+                transaction.onerror = () => reject(transaction.error || new Error('添付ファイルを保存できませんでした。'));
+                transaction.onabort = () => reject(transaction.error || new Error('添付ファイルの保存が中断されました。'));
+            });
+        }
+
+        async function getChatAttachment(id) {
+            const db = await openChatAttachmentDb();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(CHAT_ATTACHMENT_STORE_NAME, 'readonly');
+                const request = transaction.objectStore(CHAT_ATTACHMENT_STORE_NAME).get(id);
+                let result = null;
+                request.onsuccess = () => { result = request.result || null; };
+                request.onerror = () => reject(request.error || new Error('添付ファイルを読み込めませんでした。'));
+                transaction.oncomplete = () => resolve(result);
+                transaction.onerror = () => reject(transaction.error || new Error('添付ファイルを読み込めませんでした。'));
+                transaction.onabort = () => reject(transaction.error || new Error('添付ファイルの読み込みが中断されました。'));
+            });
+        }
+
+        async function deleteChatAttachment(id) {
+            const db = await openChatAttachmentDb();
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(CHAT_ATTACHMENT_STORE_NAME, 'readwrite');
+                transaction.objectStore(CHAT_ATTACHMENT_STORE_NAME).delete(id);
+                transaction.oncomplete = resolve;
+                transaction.onerror = () => reject(transaction.error || new Error('添付ファイルを削除できませんでした。'));
+                transaction.onabort = () => reject(transaction.error || new Error('添付ファイルの削除が中断されました。'));
+            });
+        }
+
+        function dataUrlToBlob(dataUrl) {
+            const match = /^data:([^;,]+)?(;base64)?,([\s\S]*)$/i.exec(dataUrl);
+            if (!match) throw new Error('旧形式の添付データを読み取れませんでした。');
+
+            const mimeType = match[1] || 'application/octet-stream';
+            const data = match[3];
+            if (match[2]) {
+                const binary = atob(data);
+                const bytes = new Uint8Array(binary.length);
+                for (let index = 0; index < binary.length; index++) {
+                    bytes[index] = binary.charCodeAt(index);
+                }
+                return new Blob([bytes], { type: mimeType });
+            }
+            return new Blob([decodeURIComponent(data)], { type: mimeType });
+        }
+
+        function getDataUrlMimeType(dataUrl) {
+            const match = /^data:([^;,]+)/i.exec(dataUrl);
+            return match ? match[1] : 'application/octet-stream';
+        }
+
+        function getLegacyChatMedia(message) {
+            if (!message || typeof message.text !== 'string' || !/<(?:img|video)\b/i.test(message.text)) {
+                return [];
+            }
+            const doc = new DOMParser().parseFromString(message.text, 'text/html');
+            return Array.from(doc.querySelectorAll('img[src^="data:"], video[src^="data:"]'))
+                .map(element => ({
+                    tagName: element.tagName.toLowerCase(),
+                    dataUrl: element.getAttribute('src'),
+                    name: element.getAttribute('alt') || '添付ファイル'
+                }));
+        }
+
+        function getLegacyChatText(message) {
+            if (typeof message.promptText === 'string') return message.promptText;
+            if (typeof message.text !== 'string') return '';
+            if (!/<[a-z][\s\S]*>/i.test(message.text)) return message.text;
+            const doc = new DOMParser().parseFromString(message.text, 'text/html');
+            return doc.body.textContent.trim();
+        }
+
+        async function migrateLegacyChatAttachments(messages) {
+            let changed = false;
+            for (const message of messages) {
+                if (!message || message.sender !== 'user' || typeof message.text !== 'string') continue;
+
+                const legacyMedia = getLegacyChatMedia(message);
+                if (legacyMedia.length && (!Array.isArray(message.attachments) || message.attachments.length === 0)) {
+                    const attachments = [];
+                    for (const media of legacyMedia) {
+                        const blob = dataUrlToBlob(media.dataUrl);
+                        attachments.push(await storeChatAttachment(new File([blob], media.name, { type: blob.type })));
+                    }
+                    message.attachments = attachments;
+                    changed = true;
+                }
+
+                if (/<[a-z][\s\S]*>/i.test(message.text)) {
+                    const plainText = getLegacyChatText(message);
+                    message.text = plainText;
+                    if (typeof message.promptText !== 'string') message.promptText = plainText;
+                    changed = true;
+                }
+            }
+            return changed;
         }
 
         function getCurrentChatId(accountName) {
-            let chatId = localStorage.getItem(`gemini_current_chat_${accountName}`);
+            let chatId = localStorage.getItem('gemini_current_chat_' + accountName);
             const chats = getChats(accountName);
             if (!chatId || !chats.find(c => c.id === chatId)) {
                 chatId = chats[0].id;
-                localStorage.setItem(`gemini_current_chat_${accountName}`, chatId);
+                localStorage.setItem('gemini_current_chat_' + accountName, chatId);
             }
             return chatId;
         }
 
         function setCurrentChatId(accountName, chatId) {
-            localStorage.setItem(`gemini_current_chat_${accountName}`, chatId);
+            localStorage.setItem('gemini_current_chat_' + accountName, chatId);
         }
 
-        // --- UI初期化と更新 ---
         function initApp() {
-            const savedModel = localStorage.getItem('gemini_model_name') || 'astral-3.5-flash-lite';
-            headerModelSelect.value = savedModel;
+            const savedModel = localStorage.getItem('gemini_model_name');
+            if (savedModel && Array.from(headerModelSelect.options).some(opt => opt.value === savedModel)) {
+                headerModelSelect.value = savedModel;
+            } else {
+                headerModelSelect.value = 'gemini-3.8-flash';
+                localStorage.setItem('gemini_model_name', 'gemini-3.8-flash');
+            }
 
             const accounts = getAccounts();
             const currentAccount = getCurrentAccount();
@@ -468,7 +1616,7 @@
             accounts.forEach(acc => {
                 const opt = document.createElement('option');
                 opt.value = acc;
-                opt.textContent = `🔑 ${acc}`;
+                opt.textContent = '🔑 ' + acc;
                 if (acc === currentAccount) opt.selected = true;
                 accountSelect.appendChild(opt);
             });
@@ -501,9 +1649,12 @@
                 div.textContent = chat.title;
                 if (chat.id === currentChatId) {
                     div.classList.add('active');
-                    currentChatTitle.textContent = chat.title;
+                    if (chatView.style.display !== 'none') {
+                        currentChatTitle.textContent = chat.title;
+                    }
                 }
                 div.addEventListener('click', () => {
+                    switchMode('chat');
                     setCurrentChatId(currentAccount, chat.id);
                     renderHistory();
                     loadCurrentChatMessages();
@@ -513,42 +1664,143 @@
         }
 
         function loadCurrentChatMessages() {
+            const renderToken = ++chatRenderToken;
+            releaseChatAttachmentUrls();
             chatMessages.innerHTML = '';
             const currentAccount = getCurrentAccount();
             const chats = getChats(currentAccount);
             const currentChatId = getCurrentChatId(currentAccount);
             const chat = chats.find(c => c.id === currentChatId);
 
-            if (chat && chat.messages) {
-                chat.messages.forEach(msg => {
-                    addMessageElement(msg.text, msg.sender);
-                });
+            if (chat && chat.messages) renderChatMessages(chat, chats, currentAccount, renderToken);
+        }
+
+        let chatRenderToken = 0;
+        const chatAttachmentObjectUrls = new Set();
+
+        function releaseChatAttachmentUrls() {
+            chatAttachmentObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            chatAttachmentObjectUrls.clear();
+        }
+
+        async function renderChatMessages(chat, chats, accountName, renderToken) {
+            try {
+                if (await migrateLegacyChatAttachments(chat.messages)) {
+                    saveChats(accountName, chats);
+                }
+            } catch (error) {
+                console.error('Legacy chat attachment migration failed:', error);
+                addMessageElement('以前の添付ファイルを保存領域へ移せませんでした。古い画像は表示できますが、再読込後の利用に制限がある場合があります。', 'error');
+            }
+
+            for (const message of chat.messages) {
+                if (renderToken !== chatRenderToken) return;
+                try {
+                    await renderChatMessage(message, renderToken);
+                } catch (error) {
+                    console.error('Chat message rendering failed:', error);
+                    addMessageElement('添付ファイルを表示できませんでした。', 'error');
+                }
             }
         }
 
-        // メッセージ表示部分 (marked.js による HTML 自動変換)
-        function addMessageElement(content, sender) {
+        async function renderChatMessage(message, renderToken, transientAttachments = new Map()) {
+            if (message.sender !== 'user') {
+                return addMessageElement(message.text || '', message.sender);
+            }
+
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender);
-            
-            if (sender === 'ai') {
-                // AIの返答は Markdown を HTML に変換して表示
-                messageDiv.innerHTML = marked.parse(content);
-            } else {
-                // ユーザー発言・エラー・HTMLを含む入力の表示
-                if (content.startsWith('<img') || content.startsWith('<video') || content.startsWith('<div>')) {
-                    messageDiv.innerHTML = content;
+            messageDiv.classList.add('message', 'user');
+            const attachments = Array.isArray(message.attachments) ? message.attachments : [];
+            const legacyMedia = attachments.length ? [] : getLegacyChatMedia(message);
+
+            for (const attachment of attachments) {
+                const transientFile = transientAttachments.get(attachment.id);
+                const stored = transientFile
+                    ? { blob: transientFile, name: attachment.name, type: attachment.type }
+                    : await getChatAttachment(attachment.id);
+                if (renderToken !== chatRenderToken) return null;
+                if (!stored || !stored.blob) {
+                    const label = document.createElement('div');
+                    label.textContent = '📎 ' + (attachment.name || '添付ファイル') + '（読み込めません）';
+                    messageDiv.appendChild(label);
+                    continue;
+                }
+
+                const url = URL.createObjectURL(stored.blob);
+                chatAttachmentObjectUrls.add(url);
+                const type = attachment.type || stored.type || '';
+                if (type.startsWith('image/')) {
+                    const image = document.createElement('img');
+                    image.src = url;
+                    image.alt = attachment.name || '添付画像';
+                    messageDiv.appendChild(image);
+                } else if (type.startsWith('video/')) {
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.controls = true;
+                    messageDiv.appendChild(video);
+                } else if (type.startsWith('audio/')) {
+                    const audio = document.createElement('audio');
+                    audio.src = url;
+                    audio.controls = true;
+                    audio.preload = 'metadata';
+                    messageDiv.appendChild(audio);
                 } else {
-                    messageDiv.textContent = content;
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = attachment.name || '添付ファイル';
+                    link.textContent = '📎 ' + (attachment.name || '添付ファイル');
+                    messageDiv.appendChild(link);
                 }
             }
-            
+
+            legacyMedia.forEach(media => {
+                const element = document.createElement(media.tagName);
+                element.src = media.dataUrl;
+                if (media.tagName === 'video') element.controls = true;
+                if (media.tagName === 'img') element.alt = media.name;
+                messageDiv.appendChild(element);
+            });
+
+            const text = getLegacyChatText(message);
+            if (text) {
+                const textDiv = document.createElement('div');
+                textDiv.textContent = text;
+                messageDiv.appendChild(textDiv);
+            }
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             return messageDiv;
         }
 
-        // --- イベントリスナー ---
+        function addMessageElement(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            if (sender === 'ai') {
+                if (window.marked && typeof window.marked.parse === 'function') {
+                    messageDiv.innerHTML = window.marked.parse(content);
+                } else {
+                    messageDiv.textContent = content;
+                }
+            } else {
+                messageDiv.textContent = content;
+            }
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return messageDiv;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
+        }
+
         headerModelSelect.addEventListener('change', (e) => {
             localStorage.setItem('gemini_model_name', e.target.value);
         });
@@ -557,18 +1809,17 @@
             localStorage.setItem('gemini_current_account', e.target.value);
             renderHistory();
             loadCurrentChatMessages();
+            renderAllStudioHistories(); // ← この1行を追加
         });
 
         addAccountBtn.addEventListener('click', () => {
             const newPass = newAccountInput.value.trim();
             if (!newPass) return;
-
             const accounts = getAccounts();
             if (accounts.includes(newPass)) {
-                alert(`⚠️ そのパスワード「${newPass}」はすでに使用されています！一覧から選択するか、別のパスワードを入力してください。`);
+                alert('⚠️ そのパスワード「' + newPass + '」はすでに使用されています！');
                 return;
             }
-
             accounts.push(newPass);
             localStorage.setItem('gemini_accounts', JSON.stringify(accounts));
             localStorage.setItem('gemini_current_account', newPass);
@@ -577,6 +1828,7 @@
         });
 
         newChatBtn.addEventListener('click', () => {
+            switchMode('chat');
             const currentAccount = getCurrentAccount();
             const chats = getChats(currentAccount);
             const newChat = {
@@ -594,7 +1846,7 @@
         fileInput.addEventListener('change', (e) => {
             if (e.target.files && e.target.files[0]) {
                 selectedFile = e.target.files[0];
-                fileNameDisplay.textContent = `📎 ${selectedFile.name}`;
+                fileNameDisplay.textContent = '📎 ' + selectedFile.name;
                 filePreviewBar.style.display = 'flex';
             }
         });
@@ -609,33 +1861,36 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onload = () => resolve(reader.result);
                 reader.onerror = (error) => reject(error);
             });
         }
 
-        async function getGeminiResponse(userPrompt, fileObj) {
-            const apiKey = localStorage.getItem('gemini_api_key');
+        async function getGeminiResponse(userPrompt, fileObj, historyMessages) {
             const modelName = headerModelSelect.value;
-            const systemInstruction = localStorage.getItem('gemini_system_instruction') || '';
+            const userInstruction = localStorage.getItem('gemini_system_instruction') || '';
 
-            if (!apiKey) {
-                return { error: 'APIキーが設定されていません。「⚙️ 育成・設定画面」から登録してください。' };
+            let systemInstruction = 
+                "【基本プロフィール】\n" +
+                "・名前: Astral（アストラル）\n" +
+                "・開発拠点: Astral Lab（開発者: Ryu）\n" +
+                "・正体: GoogleのGeminiをベースに、独自のUIやゲーム・画像生成スタジオ機能などがコードで拡張された次世代AIアシスタント。\n\n" +
+                "【会話のスタイル・多様性ルール】\n" +
+                "・毎回同じようなテンプレートを使わず、質問のニュアンスに合わせて表現や語尾を柔軟に変えてください。\n" +
+                "・自分の開発経緯や『Geminiベースである』という設定は、ユーザーから直接質問されたときだけ答えてください。普段の会話で自分から名乗ったり前置きしたりするのは禁止です。";
+
+            if (userInstruction.trim() !== "") {
+                systemInstruction += "\n\n【ユーザー指定の性格・口調（最優先で演じること）】\n" + userInstruction;
             }
 
             const loadingDiv = addMessageElement('考え中...', 'ai');
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
             
             const parts = [];
             if (fileObj) {
                 try {
-                    const base64Data = await convertFileToBase64(fileObj);
-                    parts.push({
-                        inline_data: {
-                            mime_type: fileObj.type,
-                            data: base64Data
-                        }
-                    });
+                    const dataUrl = await convertFileToBase64(fileObj);
+                    const fileBase64ForApi = dataUrl.split(',')[1];
+                    parts.push({ inline_data: { mime_type: fileObj.type, data: fileBase64ForApi } });
                 } catch (err) {
                     loadingDiv.remove();
                     return { error: 'ファイルの読み込みに失敗しました。' };
@@ -648,116 +1903,812 @@
                 parts.push({ text: "このファイルについて説明してください。" });
             }
 
-            const currentAccount = getCurrentAccount();
-            const chats = getChats(currentAccount);
-            const currentChatId = getCurrentChatId(currentAccount);
-            const chat = chats.find(c => c.id === currentChatId);
-
             const contentsHistory = [];
-            if (chat && chat.messages) {
-            chat.messages.forEach(msg => {
-            // エラーメッセージ以外を履歴としてAIに教える
-            if (msg.sender === 'user') {
-            contentsHistory.push({ role: 'user', parts: [{ text: msg.text }] });
-             } else if (msg.sender === 'ai') {
-            contentsHistory.push({ role: 'model', parts: [{ text: msg.text }] });
-             }
-    });
-}
+            try {
+                if (historyMessages) {
+                    for (const msg of historyMessages) {
+                        if (msg.sender === 'user') {
+                            const historicalParts = [];
+                            const attachments = Array.isArray(msg.attachments) ? msg.attachments : [];
+                            if (attachments.length) {
+                                for (const attachment of attachments) {
+                                    const stored = await getChatAttachment(attachment.id);
+                                    if (!stored || !stored.blob) {
+                                        throw new Error('会話履歴の添付ファイルを読み込めませんでした: ' + (attachment.name || '添付ファイル'));
+                                    }
+                                    const dataUrl = await convertFileToBase64(stored.blob);
+                                    historicalParts.push({
+                                        inline_data: {
+                                            mime_type: attachment.type || stored.type || 'application/octet-stream',
+                                            data: dataUrl.split(',')[1]
+                                        }
+                                    });
+                                }
+                            } else {
+                                getLegacyChatMedia(msg).forEach(media => {
+                                    historicalParts.push({
+                                        inline_data: {
+                                            mime_type: getDataUrlMimeType(media.dataUrl),
+                                            data: media.dataUrl.split(',')[1]
+                                        }
+                                    });
+                                });
+                            }
 
-// 今回の最後のメッセージ（ファイル付きなどの場合も考慮）を追加
-contentsHistory.push({ role: 'user', parts: parts });
-
-const payload = {
-    contents: contentsHistory
-};
-
-            if (systemInstruction) {
-                payload.system_instruction = { parts: [{ text: systemInstruction }] };
+                            const text = getLegacyChatText(msg);
+                            if (text) historicalParts.push({ text: text });
+                            if (historicalParts.length) {
+                                contentsHistory.push({ role: 'user', parts: historicalParts });
+                            }
+                        } else if (msg.sender === 'ai') {
+                            contentsHistory.push({ role: 'model', parts: [{ text: msg.text }] });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Chat history attachment load failed:', err);
+                loadingDiv.remove();
+                return { error: '過去の添付ファイルを読み込めませんでした。添付を再選択して送信してください。' };
             }
+            contentsHistory.push({ role: 'user', parts: parts });
+
+            const payload = {
+                contents: contentsHistory,
+                system_instruction: { parts: [{ text: systemInstruction }] }
+            };
 
             try {
-                const response = await fetch(url, {
+                const response = await fetch(WORKER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ model: modelName, payload: payload })
                 });
-
                 const data = await response.json();
                 loadingDiv.remove();
 
-                if (data.error) {
-                    return { error: `APIエラー: ${data.error.message}` };
-                }
-                if (!data.candidates || data.candidates.length === 0) {
-                    return { error: 'AIからの有効な応答が得られませんでした。' };
+                if (!response.ok || data.error) {
+                    const errorDetail = typeof data.error === 'string'
+                        ? data.error
+                        : data.error && data.error.message;
+                    return { error: 'APIエラー: ' + (errorDetail || 'HTTP ' + response.status) };
                 }
 
-                return { text: data.candidates[0].content.parts[0].text };
+                const text = data.candidates?.[0]?.content?.parts?.find(part => typeof part.text === 'string')?.text;
+                if (typeof text !== 'string' || !text.trim()) {
+                    return { error: 'AIから有効なテキスト応答が得られませんでした。' };
+                }
+                return { text: text };
             } catch (err) {
                 loadingDiv.remove();
-                return { error: '通信エラーが発生しました。ネットワークを確認してください。' };
+                return { error: '通信エラーが発生しました。' };
             }
         }
 
+        let isSending = false;
         async function handleSend() {
+            if (isSending) return;
             const text = userInput.value.trim();
             const currentFile = selectedFile;
             if (!text && !currentFile) return;
+            if (!checkRateLimit()) return;
 
-            let userDisplayHtml = '';
-            if (currentFile) {
-                if (currentFile.type.startsWith('image/')) {
-                    userDisplayHtml += `<img src="${URL.createObjectURL(currentFile)}" alt="image">`;
-                } else if (currentFile.type.startsWith('video/')) {
-                    userDisplayHtml += `<video src="${URL.createObjectURL(currentFile)}" controls></video>`;
+            isSending = true;
+            sendBtn.disabled = true;
+            let currentAccount;
+            let chats;
+            let chat;
+            let historyMessages = [];
+            let storedAttachment = null;
+            let attachmentPersisted = false;
+
+            try {
+                currentAccount = getCurrentAccount();
+                chats = getChats(currentAccount);
+                const currentChatId = getCurrentChatId(currentAccount);
+                chat = chats.find(c => c.id === currentChatId);
+                historyMessages = chat ? chat.messages.slice() : [];
+
+                if (currentFile) storedAttachment = await storeChatAttachment(currentFile);
+                const userMessage = {
+                    sender: 'user',
+                    text: text,
+                    promptText: text || 'このファイルについて説明してください。',
+                    attachments: storedAttachment ? [storedAttachment] : []
+                };
+                const transientAttachments = storedAttachment
+                    ? new Map([[storedAttachment.id, currentFile]])
+                    : new Map();
+                await renderChatMessage(userMessage, chatRenderToken, transientAttachments);
+
+                if (chat) {
+                    if (chat.title === '新しいチャット' && text) {
+                        chat.title = text.length > 15 ? text.substring(0, 15) + '...' : text;
+                    }
+                    chat.messages.push(userMessage);
+                    try {
+                        saveChats(currentAccount, chats);
+                        attachmentPersisted = true;
+                    } catch (storageError) {
+                        chat.messages.pop();
+                        throw new Error('会話履歴を保存できませんでした。ブラウザーの保存容量を確認してください。');
+                    }
+                    renderHistory();
+                }
+
+                userInput.value = '';
+                selectedFile = null;
+                fileInput.value = '';
+                filePreviewBar.style.display = 'none';
+
+                const result = await getGeminiResponse(text, currentFile, historyMessages);
+                if (result.error) {
+                    addMessageElement(result.error, 'error');
+                    if (chat) chat.messages.push({ sender: 'error', text: result.error });
                 } else {
-                    userDisplayHtml += `<div>📎 ${currentFile.name}</div>`;
+                    addMessageElement(result.text, 'ai');
+                    if (chat) chat.messages.push({ sender: 'ai', text: result.text });
                 }
-            }
-            if (text) {
-                userDisplayHtml += `<div>${text.replace(/\n/g, '<br>')}</div>`;
-            }
-
-            addMessageElement(userDisplayHtml, 'user');
-
-            const currentAccount = getCurrentAccount();
-            const chats = getChats(currentAccount);
-            const currentChatId = getCurrentChatId(currentAccount);
-            const chat = chats.find(c => c.id === currentChatId);
-
-            if (chat) {
-                if (chat.title === '新しいチャット' && text) {
-                    chat.title = text.length > 15 ? text.substring(0, 15) + '...' : text;
+                if (chat) saveChats(currentAccount, chats);
+            } catch (error) {
+                console.error('Message send failed:', error);
+                if (storedAttachment && !attachmentPersisted) {
+                    try {
+                        await deleteChatAttachment(storedAttachment.id);
+                    } catch (cleanupError) {
+                        console.error('Unreferenced chat attachment cleanup failed:', cleanupError);
+                    }
                 }
-                chat.messages.push({ sender: 'user', text: userDisplayHtml });
-                saveChats(currentAccount, chats);
-                renderHistory();
+                const errorText = error instanceof Error
+                    ? error.message
+                    : 'メッセージを送信できませんでした。もう一度お試しください。';
+                addMessageElement(errorText, 'error');
+                if (chat) {
+                    chat.messages.push({ sender: 'error', text: errorText });
+                    try {
+                        saveChats(currentAccount, chats);
+                    } catch (storageError) {
+                        console.error('Chat error message could not be saved:', storageError);
+                        addMessageElement('エラー内容を会話履歴に保存できませんでした。', 'error');
+                    }
+                }
+            } finally {
+                isSending = false;
+                sendBtn.disabled = false;
             }
-
-            userInput.value = '';
-            selectedFile = null;
-            fileInput.value = '';
-            filePreviewBar.style.display = 'none';
-
-            const result = await getGeminiResponse(text, currentFile);
-
-            if (result.error) {
-                addMessageElement(result.error, 'error');
-                chat.messages.push({ sender: 'error', text: result.error });
-            } else {
-                addMessageElement(result.text, 'ai');
-                chat.messages.push({ sender: 'ai', text: result.text });
-            }
-            saveChats(currentAccount, chats);
         }
 
         sendBtn.addEventListener('click', handleSend);
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // ==========================================
+        // 🎮 ゲーム作成スタジオのロジック
+        // ==========================================
+        function extractHtmlCode(rawText) {
+            const htmlBlockMatch = rawText.match(/```html\s*([\s\S]*?)```/i);
+            if (htmlBlockMatch && htmlBlockMatch[1]) {
+                return htmlBlockMatch[1].trim();
+            }
+            const genericBlockMatch = rawText.match(/```\s*([\s\S]*?)```/);
+            if (genericBlockMatch && genericBlockMatch[1]) {
+                return genericBlockMatch[1].trim();
+            }
+            return rawText.trim();
+        }
+
+        function isUsableGameDesignSkeleton(html) {
+            const lowerHtml = html.toLowerCase();
+            const scriptIndex = lowerHtml.lastIndexOf('<script');
+            const logicMarkerIndex = lowerHtml.indexOf('// game_logic_here');
+            return (lowerHtml.startsWith('<!doctype html>') || lowerHtml.startsWith('<html')) &&
+                lowerHtml.includes('<canvas') &&
+                scriptIndex >= 0 &&
+                logicMarkerIndex > scriptIndex;
+        }
+
+        function isCompleteGameHtml(html) {
+            const lowerHtml = html.trim().toLowerCase();
+            return (lowerHtml.startsWith('<!doctype html>') || lowerHtml.startsWith('<html')) &&
+                lowerHtml.endsWith('</html>');
+        }
+
+        function switchWorkspaceTab(tab) {
+            if (tab === 'play') {
+                tabPlayBtn.classList.add('active');
+                tabCodeBtn.classList.remove('active');
+                gamePreviewFrame.style.display = 'block';
+                gameCodeView.style.display = 'none';
+            } else {
+                tabCodeBtn.classList.add('active');
+                tabPlayBtn.classList.remove('active');
+                gameCodeView.style.display = 'block';
+                gamePreviewFrame.style.display = 'none';
+            }
+        }
+
+        tabPlayBtn.addEventListener('click', () => switchWorkspaceTab('play'));
+        tabCodeBtn.addEventListener('click', () => switchWorkspaceTab('code'));
+
+        async function copyGameCode() {
+            if (!currentGeneratedGameCode) {
+                alert('コピーするゲームコードがありません。先にゲームを作成してください。');
+                return;
+            }
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(currentGeneratedGameCode);
+                } else {
+                    throw new Error('Clipboard API is unavailable in this context.');
+                }
+            } catch (error) {
+                const temporaryTextArea = document.createElement('textarea');
+                temporaryTextArea.value = currentGeneratedGameCode;
+                temporaryTextArea.style.position = 'fixed';
+                temporaryTextArea.style.opacity = '0';
+                document.body.appendChild(temporaryTextArea);
+                let copied = false;
+                try {
+                    temporaryTextArea.focus();
+                    temporaryTextArea.select();
+                    copied = document.execCommand('copy');
+                } catch (fallbackError) {
+                    console.error('Clipboard fallback failed:', fallbackError);
+                } finally {
+                    temporaryTextArea.remove();
+                }
+
+                if (!copied) {
+                    console.error('Clipboard copy failed:', error);
+                    alert('コードをコピーできませんでした。ブラウザーの権限を確認してください。');
+                    return;
+                }
+            }
+
+            const originalText = copyCodeBtn.textContent;
+            copyCodeBtn.textContent = '✅ コピー完了！';
+            setTimeout(() => { copyCodeBtn.textContent = originalText; }, 2000);
+        }
+
+        copyCodeBtn.addEventListener('click', copyGameCode);
+
+        fullscreenBtn.addEventListener('click', async () => {
+            if (!currentGeneratedGameCode) {
+                alert('先にゲームを作成してください。');
+                return;
+            }
+            if (gamePreviewFrame.style.display === 'none') {
+                switchWorkspaceTab('play');
+            }
+
+            try {
+                if (document.fullscreenElement === gamePreviewFrame) {
+                    await document.exitFullscreen();
+                } else if (gamePreviewFrame.requestFullscreen) {
+                    await gamePreviewFrame.requestFullscreen();
+                } else if (gamePreviewFrame.webkitRequestFullscreen) {
+                    gamePreviewFrame.webkitRequestFullscreen();
+                } else {
+                    alert('このブラウザーは全画面表示に対応していません。');
+                }
+            } catch (error) {
+                console.error('Fullscreen request failed:', error);
+                alert('全画面表示にできませんでした。ブラウザーの設定をご確認ください。');
+            }
+        });
+
+        // ==========================================
+        // 🎨 画像作成スタジオのロジック
+        // ==========================================
+        const imageModelSelect = document.getElementById('image-model-select');
+        const imageStyleSelect = document.getElementById('image-style-select');
+        const imagePromptInput = document.getElementById('image-prompt-input');
+        const generateImageBtn = document.getElementById('generate-image-btn');
+        const downloadImageBtn = document.getElementById('download-image-btn');
+        const imageLoadingOverlay = document.getElementById('image-loading-overlay');
+        const imagePlaceholder = document.getElementById('image-placeholder');
+        const generatedImagePreview = document.getElementById('generated-image-preview');
+
+        let currentGeneratedImageDataUrl = "";
+
+        async function readImageWorkerResponse(response, operationName) {
+            let data;
+            try {
+                data = await response.json();
+            } catch (error) {
+                throw new Error(operationName + 'から有効なJSON応答がありませんでした（HTTP ' + response.status + '）。');
+            }
+
+            if (!response.ok || data.error) {
+                const errorDetail = typeof data.error === 'string'
+                    ? data.error
+                    : data.error && data.error.message;
+                throw new Error(operationName + 'に失敗しました: ' + (errorDetail || 'HTTP ' + response.status));
+            }
+            return data;
+        }
+
+        generateImageBtn.addEventListener('click', async () => {
+            const rawPrompt = imagePromptInput.value.trim();
+            if (rawPrompt.length < 2) {
+                alert('作りたい画像の説明を入力してください！');
+                return;
+            }
+            if (!checkRateLimit()) return;
+
+            generateImageBtn.disabled = true;
+            imageLoadingOverlay.style.display = 'flex';
+
+            try {
+                // 1. まずGeminiを使って日本語のプロンプトを英語の画像生成用プロンプトに翻訳・最適化
+                const translateRes = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'gemini-3.5-flash-lite',
+                        payload: {
+                            contents: [{
+                                role: 'user',
+                                parts: [{ text: `Translate and expand the following image description into a concise English prompt for an AI image generator (like Flux/Stable Diffusion). Output ONLY the English prompt words, no explanation:\n\n${rawPrompt}` }]
+                            }]
+                        }
+                    })
+                });
+                const translateData = await readImageWorkerResponse(translateRes, 'プロンプト翻訳');
+                const translatedText = translateData.candidates &&
+                    translateData.candidates[0] &&
+                    translateData.candidates[0].content &&
+                    translateData.candidates[0].content.parts &&
+                    translateData.candidates[0].content.parts[0] &&
+                    translateData.candidates[0].content.parts[0].text;
+                if (typeof translatedText !== 'string' || !translatedText.trim()) {
+                    throw new Error('プロンプト翻訳AIから有効な応答がありませんでした。');
+                }
+                const englishPrompt = translatedText.trim();
+
+                // スタイル指定を結合
+                const finalPrompt = englishPrompt + imageStyleSelect.value;
+
+                // 2. Workers AI に画像生成リクエストを送信
+                const imgRes = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'image',
+                        imageModel: imageModelSelect.value,
+                        prompt: finalPrompt
+                    })
+                });
+                const imgData = await readImageWorkerResponse(imgRes, '画像生成');
+                if (typeof imgData.imageBase64 !== 'string' || !imgData.imageBase64.trim()) {
+                    throw new Error('画像生成AIから画像データを含む有効な応答がありませんでした。');
+                }
+                currentGeneratedImageDataUrl = 'data:image/png;base64,' + imgData.imageBase64;
+                generatedImagePreview.src = currentGeneratedImageDataUrl;
+                generatedImagePreview.style.display = 'block';
+                imagePlaceholder.style.display = 'none';
+                downloadImageBtn.disabled = false;
+                const compressedDataUrl = await compressImageForStorage(currentGeneratedImageDataUrl);
+                const historySaved = saveStudioHistory('image', {
+                    title: rawPrompt.length > 20 ? rawPrompt.substring(0, 20) + '...' : rawPrompt,
+                    meta: imageModelSelect.options[imageModelSelect.selectedIndex].text.split('（')[0],
+                    imageDataUrl: compressedDataUrl,
+                    prompt: rawPrompt,
+                    model: imageModelSelect.value,
+                    style: imageStyleSelect.value
+                });
+                if (!historySaved) {
+                    alert('画像は生成されましたが、履歴を保存できませんでした。ブラウザーの保存容量を確認してください。');
+                }
+            } catch (err) {
+                console.error('Image generation error:', err);
+                alert(err instanceof Error ? err.message : '画像生成中に予期しないエラーが発生しました。');
+            } finally {
+                generateImageBtn.disabled = false;
+                imageLoadingOverlay.style.display = 'none';
+            }
+        });
+
+        downloadImageBtn.addEventListener('click', () => {
+            if (!currentGeneratedImageDataUrl) return;
+            const a = document.createElement('a');
+            a.href = currentGeneratedImageDataUrl;
+            a.download = 'astral_art_' + Date.now() + '.png';
+            a.click();
+        });
+
+        // ==========================================
+        // 🎵 音楽・効果音スタジオのロジック（Web Audio API）
+        // ==========================================
+        const musicTypeSelect = document.getElementById('music-type-select');
+        const musicStyleSelect = document.getElementById('music-style-select');
+        const musicPromptInput = document.getElementById('music-prompt-input');
+        const generateMusicBtn = document.getElementById('generate-music-btn');
+        const playMusicBtn = document.getElementById('play-music-btn');
+        const stopMusicBtn = document.getElementById('stop-music-btn');
+        const copyMusicCodeBtn = document.getElementById('copy-music-code-btn');
+        const musicLoadingOverlay = document.getElementById('music-loading-overlay');
+        const musicPlaceholder = document.getElementById('music-placeholder');
+        const musicPlayerBox = document.getElementById('music-player-box');
+        const musicStatusText = document.getElementById('music-status-text');
+        const musicCodeView = document.getElementById('music-code-view');
+
+        let currentMusicCode = "";
+        let activeAudioCtx = null;
+        let activeIntervalIds = [];
+        let audioPlaybackToken = 0;
+
+        function stopCurrentSound() {
+            audioPlaybackToken++;
+            activeIntervalIds.forEach(id => clearInterval(id));
+            activeIntervalIds = [];
+            if (activeAudioCtx) {
+                activeAudioCtx.close().catch(() => {});
+                activeAudioCtx = null;
+            }
+            musicStatusText.textContent = '⏹ 停止中（「▶ 再生」で何度でも試聴できます）';
+            musicStatusText.style.color = '#94a3b8';
+        }
+
+        async function playGeneratedSound() {
+            if (!currentMusicCode) return;
+            stopCurrentSound();
+            const playbackToken = ++audioPlaybackToken;
+
+            try {
+                const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+                activeAudioCtx = new AudioCtxClass();
+                const audioContext = activeAudioCtx;
+
+                if (audioContext.state === 'suspended') {
+                    try {
+                        await audioContext.resume();
+                    } catch (resumeError) {
+                        if (playbackToken === audioPlaybackToken) {
+                            musicStatusText.textContent = '自動再生できません。再生ボタンを押して試してください。';
+                            musicStatusText.style.color = '#fbbf24';
+                        }
+                        return;
+                    }
+                }
+                if (playbackToken !== audioPlaybackToken) return;
+                if (audioContext.state !== 'running') {
+                    musicStatusText.textContent = '音声を開始できませんでした。再生ボタンを押してもう一度お試しください。';
+                    musicStatusText.style.color = '#fbbf24';
+                    return;
+                }
+
+                // setIntervalを監視して停止ボタンで確実に止められるようにラップする
+                const trackedSetInterval = (fn, delay) => {
+                    const id = setInterval(fn, delay);
+                    activeIntervalIds.push(id);
+                    return id;
+                };
+
+                const runSound = new Function('ctx', 'setInterval', currentMusicCode);
+                runSound(audioContext, trackedSetInterval);
+
+                musicStatusText.textContent = '🔊 再生中...';
+                musicStatusText.style.color = '#34d399';
+            } catch (err) {
+                console.error('Audio playback error:', err);
+                stopCurrentSound();
+                musicStatusText.textContent = '音声の再生中にエラーが発生しました。再生ボタンから再試行してください。';
+                musicStatusText.style.color = '#f87171';
+                alert('音声の再生中にエラーが発生しました: ' + err.message);
+            }
+        }
+
+        function extractJsCode(rawText) {
+            const jsBlockMatch = rawText.match(/```(?:javascript|js)?\s*([\s\S]*?)```/i);
+            if (jsBlockMatch && jsBlockMatch[1]) {
+                return jsBlockMatch[1].trim();
+            }
+            return rawText.trim();
+        }
+
+        generateMusicBtn.addEventListener('click', async () => {
+            const rawPrompt = musicPromptInput.value.trim();
+            if (rawPrompt.length < 2) {
+                alert('作りたい音楽や効果音のイメージを入力してください！');
+                return;
+            }
+            if (!checkRateLimit()) return;
+
+            stopCurrentSound();
+            generateMusicBtn.disabled = true;
+            musicLoadingOverlay.style.display = 'flex';
+
+            const modelName = headerModelSelect.value;
+            const musicType = musicTypeSelect.value;
+            const musicStyle = musicStyleSelect.value;
+
+           const musicPrompt =
+                "Web Audio API を使って、ブラウザ上で直接音を鳴らす本格的なシンセサイザー音楽・効果音のJavaScriptコード本体のみを作成してください。\n\n" +
+                "【サウンド仕様】\n" +
+                "- タイプ: " + musicType + "\n" +
+                "- ジャンル・音色: " + musicStyle + "\n" +
+                "- イメージ・詳細: " + rawPrompt + "\n\n" +
+                "【絶対遵守ルール】\n" +
+                "1. すでに定義済みの AudioContext インスタンス変数 `ctx` が渡される前提で書いてください（`new AudioContext()` は書かないこと）。\n" +
+                "2. 外部の音声ファイルは一切使わず、`ctx.createOscillator()`、`ctx.createGain()`、`ctx.createBiquadFilter()` などを組み合わせて音を作ること。\n" +
+                "3. BGMの場合は必ず音楽理論（適切なコード進行とスケール）に基づき、『①メロディ・②低音ベース・③ノイズを使ったドラムビート』の3パートを `setInterval` で同時に鳴らして厚みのある楽曲にすること。音割れを防ぐため全体のGainは0.2〜0.3程度に抑えること。\n" +
+                "4. 効果音の場合は1〜2秒で綺麗に減衰して終わるようにすること。\n" +
+                "5. 説明文や挨拶は一切不要です。JavaScriptコードのみを出力してください。";
+
+            const payload = {
+                contents: [{ role: 'user', parts: [{ text: musicPrompt }] }],
+                system_instruction: {
+                    parts: [{ text: "あなたはWeb Audio APIのエキスパートサウンドプログラマーです。変数 `ctx` (AudioContext) を使って美しいシンセサイザー音楽や効果音を鳴らす純粋なJavaScriptコードのみを出力します。" }]
+                }
+            };
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: modelName, payload: payload })
+                });
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    const errorDetail = typeof data.error === 'string'
+                        ? data.error
+                        : data.error && data.error.message;
+                    alert('APIエラー: ' + (errorDetail || 'ステータスコード: ' + response.status));
+                } else if (data.candidates && data.candidates.length > 0) {
+                    const candidate = data.candidates[0];
+                    if (candidate.finishReason === 'MAX_TOKENS') {
+                        alert('音楽コードが出力上限で途中終了しました。プロンプトを短くするか、もう一度お試しください。');
+                        return;
+                    }
+                    const rawResponse = candidate.content?.parts?.find(part => typeof part.text === 'string')?.text;
+                    if (typeof rawResponse !== 'string' || !rawResponse.trim()) {
+                        alert('AIから有効な音楽コード応答が得られませんでした。');
+                        return;
+                    }
+                    currentMusicCode = extractJsCode(rawResponse);
+
+                    musicCodeView.value = "// 使用例: const ctx = new AudioContext();\n" + currentMusicCode;
+                    musicPlaceholder.style.display = 'none';
+                    musicPlayerBox.style.display = 'flex';
+
+                    playMusicBtn.disabled = false;
+                    stopMusicBtn.disabled = false;
+                    copyMusicCodeBtn.disabled = false;
+
+                    const historySaved = saveStudioHistory('music', {
+                     title: rawPrompt.length > 20 ? rawPrompt.substring(0, 20) + '...' : rawPrompt,
+                     meta: musicType.split('（')[0] + ' / ' + musicStyle.split('（')[0],
+                     code: currentMusicCode,
+                     prompt: rawPrompt,
+                     type: musicType,
+                     style: musicStyle
+                 });
+
+                    // 生成完了と同時に自動試聴スタート
+                    playGeneratedSound();
+                    if (!historySaved) {
+                        alert('音楽は生成されましたが、履歴を保存できませんでした。ブラウザーの保存容量を確認してください。');
+                    }
+                } else {
+                    alert('AIからの応答が空でした。もう一度お試しください。');
+                }
+            } catch (err) {
+                console.error('Music generation error:', err);
+                alert('通信エラーが発生しました。');
+            } finally {
+                generateMusicBtn.disabled = false;
+                musicLoadingOverlay.style.display = 'none';
+            }
+        });
+
+        playMusicBtn.addEventListener('click', playGeneratedSound);
+        stopMusicBtn.addEventListener('click', stopCurrentSound);
+
+        copyMusicCodeBtn.addEventListener('click', async () => {
+            if (!musicCodeView.value) return;
+            try {
+                await navigator.clipboard.writeText(musicCodeView.value);
+                const orig = copyMusicCodeBtn.textContent;
+                copyMusicCodeBtn.textContent = '✅ コピー完了！';
+                setTimeout(() => { copyMusicCodeBtn.textContent = orig; }, 2000);
+            } catch (err) {
+                alert('コピーに失敗しました。');
+            }
+        });
+
+        // ==========================================
+        // 📜 ゲーム・画像・音楽スタジオの履歴管理エンジン
+        // ==========================================
+        const gameHistoryList = document.getElementById('game-history-list');
+        const imageHistoryList = document.getElementById('image-history-list');
+        const musicHistoryList = document.getElementById('music-history-list');
+
+        // 画像をlocalStorage用に軽量JPEGへ圧縮する関数
+        function compressImageForStorage(dataUrl) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const maxSize = 512;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxSize || h > maxSize) {
+                            if (w > h) {
+                                h = Math.round((h * maxSize) / w);
+                                w = maxSize;
+                            } else {
+                                w = Math.round((w * maxSize) / h);
+                                h = maxSize;
+                            }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) throw new Error('画像圧縮用のCanvasを作成できませんでした。');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.75));
+                    } catch (error) {
+                        console.warn('Image history compression failed; keeping the original image:', error);
+                        resolve(dataUrl);
+                    }
+                };
+                img.onerror = () => resolve(dataUrl);
+                img.src = dataUrl;
+            });
+        }
+
+        function getStudioHistoryKey(type) {
+            return 'astral_studio_history_' + type + '_' + getCurrentAccount();
+        }
+
+        function getStudioHistory(type) {
+            try {
+                return JSON.parse(localStorage.getItem(getStudioHistoryKey(type))) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveStudioHistory(type, itemData) {
+            const key = getStudioHistoryKey(type);
+            let list = getStudioHistory(type);
+            const now = new Date();
+            const timeStr = `${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            const newItem = {
+                id: type + '_' + Date.now(),
+                createdAt: timeStr,
+                ...itemData
+            };
+
+            list.unshift(newItem);
+            // 最大20件まで保持
+            if (list.length > 20) list = list.slice(0, 20);
+
+            let saved = false;
+            try {
+                localStorage.setItem(key, JSON.stringify(list));
+                saved = true;
+            } catch (e) {
+                // 容量上限に達した場合は古いものを削って再保存
+                list = list.slice(0, 5);
+                try {
+                    localStorage.setItem(key, JSON.stringify(list));
+                    saved = true;
+                } catch (err) {
+                    console.warn('Studio history could not be saved:', err);
+                }
+            }
+            renderStudioHistory(type, newItem.id);
+            return saved;
+        }
+
+        function renderStudioHistory(type, activeId = null) {
+            const list = getStudioHistory(type);
+            const container = type === 'game' ? gameHistoryList : (type === 'image' ? imageHistoryList : musicHistoryList);
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (list.length === 0) {
+                container.innerHTML = '<div style="font-size:0.78rem; color:#64748b; text-align:center; padding:8px 0;">まだ履歴がありません</div>';
+                return;
+            }
+
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'studio-history-item' + (item.id === activeId ? ' active' : '');
+                div.innerHTML = `
+                    <div class="studio-history-title">${escapeHtml(item.title)}</div>
+                    <div class="studio-history-meta">
+                        <span>${escapeHtml(item.meta)}</span>
+                        <span>${escapeHtml(item.createdAt)}</span>
+                    </div>
+                `;
+
+                div.addEventListener('click', () => {
+                    renderStudioHistory(type, item.id);
+
+                    if (type === 'game') {
+                        currentGeneratedGameCode = item.code;
+                        gameCodeView.value = item.code;
+                        gamePreviewFrame.srcdoc = item.code;
+                        if (item.genre) gameGenre.value = item.genre;
+                        if (item.style) gameStyle.value = item.style;
+                        if (item.content) gameContent.value = item.content;
+                        if (item.controls) gameControls.value = item.controls;
+
+                        switchWorkspaceTab('play');
+                        copyCodeBtn.disabled = false;
+                        fullscreenBtn.disabled = false;
+                        recreateGameBtn.disabled = false;
+
+                    } else if (type === 'image') {
+                        currentGeneratedImageDataUrl = item.imageDataUrl;
+                        generatedImagePreview.src = item.imageDataUrl;
+                        generatedImagePreview.style.display = 'block';
+                        imagePlaceholder.style.display = 'none';
+                        downloadImageBtn.disabled = false;
+                        if (item.prompt) imagePromptInput.value = item.prompt;
+                        if (item.model) imageModelSelect.value = item.model;
+                        if (item.style !== undefined) imageStyleSelect.value = item.style;
+
+                    } else if (type === 'music') {
+                        stopCurrentSound();
+                        currentMusicCode = item.code;
+                        musicCodeView.value = "// 使用例: const ctx = new AudioContext();\n" + item.code;
+                        musicPlaceholder.style.display = 'none';
+                        musicPlayerBox.style.display = 'flex';
+                        playMusicBtn.disabled = false;
+                        stopMusicBtn.disabled = false;
+                        copyMusicCodeBtn.disabled = false;
+                        if (item.prompt) musicPromptInput.value = item.prompt;
+                        if (item.type) musicTypeSelect.value = item.type;
+                        if (item.style) musicStyleSelect.value = item.style;
+
+                        // クリックしたらすぐ再生！
+                        playGeneratedSound();
+                    }
+                });
+
+                container.appendChild(div);
+            });
+        }
+
+        function renderAllStudioHistories() {
+            renderStudioHistory('game');
+            renderStudioHistory('image');
+            renderStudioHistory('music');
+        }
+
+        // 各履歴の全削除ボタン
+        document.getElementById('clear-game-history-btn').addEventListener('click', () => {
+            if (confirm('ゲームの履歴をすべて削除しますか？')) {
+                localStorage.removeItem(getStudioHistoryKey('game'));
+                renderStudioHistory('game');
+            }
+        });
+        document.getElementById('clear-image-history-btn').addEventListener('click', () => {
+            if (confirm('画像の履歴をすべて削除しますか？')) {
+                localStorage.removeItem(getStudioHistoryKey('image'));
+                renderStudioHistory('image');
+            }
+        });
+        document.getElementById('clear-music-history-btn').addEventListener('click', () => {
+            if (confirm('音楽・効果音の履歴をすべて削除しますか？')) {
+                localStorage.removeItem(getStudioHistoryKey('music'));
+                renderStudioHistory('music');
+            }
         });
 
         initApp();
+        renderAllStudioHistories();
     </script>
 </body>
 </html>
