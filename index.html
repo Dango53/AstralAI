@@ -505,6 +505,32 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .game-workspace.pseudo-fullscreen {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 9999;
+            border-radius: 0;
+        }
+        #exit-pseudo-fullscreen-btn {
+            display: none;
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 10000;
+            background: rgba(15, 23, 42, 0.88);
+            color: #f8fafc;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        body.pseudo-fullscreen-active #exit-pseudo-fullscreen-btn {
+            display: block;
+        }
+
         #image-view {
             flex: 1;
             display: none;
@@ -675,6 +701,8 @@
                         <option value="groq:qwen/qwen3.8-27b">⚡ Groq - Qwen 3.8 27B（1000文字以内ミニゲーム）</option>
                     </select>
                 </div>
+
+                <button id="exit-pseudo-fullscreen-btn" type="button">✕ 全画面を閉じる</button>
 
                 <div class="config-group">
                     <label for="game-genre">ゲームのジャンル</label>
@@ -929,6 +957,8 @@
         const recreateGameBtn = document.getElementById('recreate-game-btn');
         const copyCodeBtn = document.getElementById('copy-code-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const exitPseudoFullscreenBtn = document.getElementById('exit-pseudo-fullscreen-btn');
+        const gameWorkspace = document.querySelector('#game-view .game-workspace');
 
         let selectedFile = null;
         let currentGeneratedGameCode = "";
@@ -2176,6 +2206,16 @@ if (!isCompleteGameHtml(cleanHtml)) {
 
         copyCodeBtn.addEventListener('click', copyGameCode);
 
+        function setPseudoFullscreen(active) {
+            if (!gameWorkspace) return;
+            gameWorkspace.classList.toggle('pseudo-fullscreen', active);
+            document.body.classList.toggle('pseudo-fullscreen-active', active);
+        }
+
+        exitPseudoFullscreenBtn?.addEventListener('click', () => {
+            setPseudoFullscreen(false);
+        });
+
         fullscreenBtn.addEventListener('click', async () => {
             if (!currentGeneratedGameCode) {
                 alert('先にゲームを作成してください。');
@@ -2185,6 +2225,20 @@ if (!isCompleteGameHtml(cleanHtml)) {
                 switchWorkspaceTab('play');
             }
 
+            if (gameWorkspace?.classList.contains('pseudo-fullscreen')) {
+                setPseudoFullscreen(false);
+                return;
+            }
+
+            const hasNativeFullscreen = Boolean(
+                gamePreviewFrame.requestFullscreen || gamePreviewFrame.webkitRequestFullscreen
+            );
+
+            if (!hasNativeFullscreen) {
+                setPseudoFullscreen(true);
+                return;
+            }
+
             try {
                 if (document.fullscreenElement === gamePreviewFrame) {
                     await document.exitFullscreen();
@@ -2192,12 +2246,10 @@ if (!isCompleteGameHtml(cleanHtml)) {
                     await gamePreviewFrame.requestFullscreen();
                 } else if (gamePreviewFrame.webkitRequestFullscreen) {
                     gamePreviewFrame.webkitRequestFullscreen();
-                } else {
-                    alert('このブラウザーは全画面表示に対応していません。');
                 }
             } catch (error) {
-                console.error('Fullscreen request failed:', error);
-                alert('全画面表示にできませんでした。ブラウザーの設定をご確認ください。');
+                console.warn('Native fullscreen failed, falling back to pseudo-fullscreen:', error);
+                setPseudoFullscreen(true);
             }
         });
 
